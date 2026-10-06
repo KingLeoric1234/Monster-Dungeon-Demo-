@@ -1,0 +1,41 @@
+% !TeX root = ../main.tex
+% ============================================================
+% Chapter 4: Fog of War
+% 说明：本文件由 main.tex 合并进主文档。章节编号 LaTeX 自动生成。
+%       内容忠实来自 策划案.docx 原文（英文）。
+%       图片：figures/Chapter04_FogOfWar/fog_of_war_effect.png
+% ============================================================
+\section{Fog of War}
+
+As described above, the Fog of War increases uncertainty.
+
+\subsection{How to Implement Fog of War?}
+
+Use League of Legends (LOL) as the main reference. The simplest way to achieve this is a shader; the Built-in rendering pipeline is enough.
+
+The logic of the Fog of War system (design decisions made by myself):
+
+\begin{enumerate}
+  \item Cast rays: 30 rays from the camera (started with 360, but that was unnecessary and costly). If a ray hits no obstacle, it reaches the view radius of 10; the end points connect into a fan shape.
+  \item Render the shape into a small image: a fog camera renders the visible and invisible areas into a 256$\times$256 texture.
+  \item Make the fog feel like LOL: apply Gaussian blur to the small image, then use the Interpolate shader to blend between the old and new shapes smoothly. I learned this step from Bilibili (BV1Wr421K7Zf, 5:40).
+  \item Hide enemies but not the scene: the Fog Overlay shader samples the scene. Where the fog is dim (alpha = 0.8), the scene is hidden; where it is clear, the scene stays visible.
+  \item Extend the visible area 0.6 units beyond each obstacle, so the obstacle itself stays visible. This improves readability.
+\end{enumerate}
+
+Before this, I tried a transitional zone, but it looked bad. I tried a multi-layer transitional zone too, but it was still bad. Finally, I found the Gaussian blur method on Bilibili and applied it to the project --- it worked!
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{fog_of_war_effect.png}
+\caption{Fog of War effect}
+\end{figure}
+
+\subsection{How to Optimize the Fog of War?}
+
+\begin{enumerate}
+  \item Cut down the rays. 360 or 180 rays are unnecessary and costly. I tried 15--45 rays --- that was enough, and the experience improved a lot. Below that, uncertainty drops; above that, the cost becomes too heavy for other computers.
+  \item Detect the player's movement: when the player stops moving, skip recomputing the fog. I tried computing the shape only once in a while (every 0.2 s) to save CPU, but it failed because the shape could not follow the camera center.
+\end{enumerate}
+
+Designer's Note: The fog is a complete system --- not because it's hard to render, but because it turns every step into a choice. I cut the rays from 360 to 30; the players never notice the difference, but the CPU does.

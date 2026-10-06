@@ -1,0 +1,86 @@
+% ============================================================
+% Game Design Documentation — 主文件（Master File）
+% 编译方式（在本目录下）：
+%   pdflatex main.tex   （连续跑 2~3 次，让目录/图号/引用稳定）
+% 或一次性：latexmk -pdf main.tex
+% ------------------------------------------------------------
+% 结构：
+%   chapters/01_game_core.tex         ~/07_version.tex   章节子文件
+%   chapters/Appendix/*.tex                               附录子文件
+%   figures/Chapter*/                 图片（按章节归类）
+% 合并原理：\include{chapters/xxx} 会把子文件内容合并进本文档，
+%           编译一次 main.tex 即得到完整 PDF。
+% ============================================================
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}   % A4 纸张（中国通用），1 英寸页边距
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{setspace}
+\usepackage{newtxtext,newtxmath}   % Times New Roman 风格字体（正文+数学）
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\usepackage[edges]{forest}
+\usepackage{seqsplit}   % 长路径断行：允许在任意字符处换行，防止溢出纸外
+
+% 全局 1.5 倍行距
+\onehalfspacing
+
+% 图片目录（按章节分文件夹，全部注册到这里，正文只需写文件名）
+\graphicspath{{figures/Chapter00_Cover/}{figures/Chapter03_Player/}{figures/Chapter04_FogOfWar/}{figures/Chapter05_RandomDungeonMap/}}
+
+% 反斜杠快捷命令（用于文档中的 Windows 路径）
+% \hspace{0pt} 是"零宽可断行点"：让长路径可以在每个反斜杠处自动换行，
+% 不会再把文字挤到纸外。所有用 \bs 的路径都自动受益。
+\newcommand{\bs}{\textbackslash\hspace{0pt}}
+
+% 封面标题：
+%   \emph{...}                             → 斜体
+%   \fontsize{字号pt}{行距pt}\selectfont  → 精确控制字号（30pt 比默认标题 \Huge 的 24.88pt 大一档）
+%   \\[1.2em]                              → 换行并空出一行高度（主标题与副标题之间）
+%   \Large                                → 游戏名 Monster Dungeon 用 \Large（比 \large 大一级）
+\title{\emph{\fontsize{30pt}{36pt}\selectfont Game Design Documentation}\\[1.2em]\fontsize{30pt}{36pt} Monster Dungeon}
+\author{}
+\date{Version 1.2}
+
+\begin{document}
+
+\maketitle
+
+% 封面图（不编号）
+\begin{center}
+\includegraphics[width=0.8\textwidth]{cover.png}
+\end{center}
+\thispagestyle{empty}   % 封面页不显示页码
+\clearpage
+
+% 目录独立成页：封面结束后另起新页，目录结束后也另起新页进正文
+% 目录本身用单倍行距+小字号，保证一页装下（正文保持 1.5 倍行距）
+{\small
+\begin{singlespace}
+\tableofcontents
+\end{singlespace}}
+\thispagestyle{empty}   % 目录页不显示页码
+\clearpage
+
+\setcounter{page}{1}    % 正文页码从 1 重新开始
+
+\include{chapters/01_game_core}
+\include{chapters/02_program_structure}
+\include{chapters/03_player}
+\include{chapters/04_fog_of_war}
+\include{chapters/05_random_dungeon_map}
+\include{chapters/06_enemy}
+\include{chapters/07_version}
+
+% \appendix 之后，\section 自动编号为 Appendix A / Appendix B / Appendix C（字母编号）
+% 注意：\include 会在每个文件前后强制分页，所以 "Appendix" 大标题
+% 放在 A_Hierarchy.tex 开头（与 Appendix A 同页），不要放在这里。
+\appendix
+\include{chapters/Appendix/A_Hierarchy}
+\include{chapters/Appendix/B_Player}
+\include{chapters/Appendix/C_Enemy}
+
+\end{document}

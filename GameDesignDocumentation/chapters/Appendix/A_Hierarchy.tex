@@ -1,0 +1,59 @@
+% !TeX root = ../../main.tex
+% ============================================================
+% Appendix A: Hierarchy（由 08_appendix.tex 拆分而来）
+% 说明：本文件由 main.tex 合并进主文档，且位于 main.tex 的
+%       \appendix 之后，因此 \section 会自动编号为 Appendix A。
+%       内容忠实来自 策划案.docx 原文（英文）。
+%       用 forest 横向树（根在左、向右展开）。
+%       【自己加节点】想加子节点：在父节点 [ ] 里加一行 [名字]。
+%       例如在 [EnemyPrefab (Example) 的 [ ] 里加 [NewBossAI]。
+% ============================================================
+
+% 附录起始页大标题（原在 main.tex，被 \include 的强制分页拆到单独一页；
+% 移到本文件开头后与 Appendix A 标题同页）
+\begin{center}
+{\fontsize{16pt}{45pt}\selectfont\textbf{Appendix}}
+\end{center}
+
+\section{Hierarchy}   % 自动显示为 "Appendix A: Hierarchy"
+
+\begin{center}
+\begin{forest}
+for tree={
+  grow=east,
+  draw,
+  rounded corners=2pt,
+  minimum height=2.1em,
+  inner xsep=5pt,
+  font=\footnotesize\sffamily,
+  s sep=4pt,
+  l sep=16pt,
+  edge={gray, thick},
+  parent anchor=east,
+  child anchor=west,
+  if n children=0{fill=gray!10}{fill=white}
+}
+[, phantom
+  [EventSystem]
+  [ParticleSystem]
+  [PlayerUnit
+    [SpriteRenderer]
+    [PlayerAttack [Weapon]]
+    [PlayerMovement]
+    [PlayerHealth [Plug\_HealthBar]]
+    [PlayerStamina [Plug\_StaminaBar]]
+  ]
+  [EnemyUnit
+    [EnemyPrefab (Example)
+      [SpriteRenderer]
+      [Animation]
+      [SpecialAl (If any)]
+      [EnemyMovement]
+      [EnemyAttack]
+      [EnemyHealth]
+      [DamagePopUp]
+    ]
+  ]
+]
+\end{forest}
+\end{center}

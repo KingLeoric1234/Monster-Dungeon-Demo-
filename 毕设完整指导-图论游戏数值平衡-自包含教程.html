@@ -1,0 +1,2190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>基于图论的 2D 地牢探索类游戏数值平衡：建模方法、指标体系与实现指南（学生版完整教程）</title>
+<script>
+window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$']]},
+  options:{skipHtmlTags:['script','noscript','style','textarea','pre']}};
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+:root{
+  --ink:#1a1a1a; --sub:#555; --line:#e3e3e3; --bg:#fbfbfa;
+  --accent:#1f4e79; --accent2:#c0392b; --box:#f4f7fa; --code:#f6f6f4;
+}
+*{box-sizing:border-box}
+body{max-width:980px;margin:0 auto;padding:48px 28px 90px;background:var(--bg);
+  color:var(--ink);font-family:"Source Han Serif SC","Songti SC",Georgia,serif;
+  font-size:16.5px;line-height:1.85;-webkit-font-smoothing:antialiased}
+h1{font-size:27px;text-align:center;letter-spacing:1px;margin:0 0 6px;color:var(--accent)}
+.sub{text-align:center;color:var(--sub);font-size:14.5px;margin-bottom:8px}
+.meta{text-align:center;color:#999;font-size:13px;margin-bottom:26px}
+h2{font-size:21px;margin:46px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--accent);color:var(--accent)}
+h3{font-size:17.5px;margin:28px 0 10px;color:#2c3e50}
+h4{font-size:16px;margin:20px 0 8px;color:#333}
+p{margin:10px 0;text-align:justify}
+ul,ol{margin:10px 0 10px 4px;padding-left:22px}
+li{margin:6px 0}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.6px;background:#fff}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--box);font-weight:600;color:var(--accent)}
+td.num{text-align:center;font-variant-numeric:tabular-nums}
+td.c{text-align:center}
+.formula{background:var(--box);border-left:4px solid var(--accent);padding:12px 16px;
+  margin:14px 0;font-family:"Cambria Math",Georgia,serif;font-size:16.5px;text-align:center;overflow-x:auto}
+pre{background:var(--code);border:1px solid var(--line);border-radius:4px;
+  padding:13px 15px;overflow-x:auto;font-size:13.4px;line-height:1.6;
+  font-family:Consolas,"Courier New",monospace}
+code{background:#f0f0ee;padding:1.5px 5px;border-radius:3px;font-size:14px;
+  font-family:Consolas,monospace}
+.box{background:var(--box);border:1px solid #dbe5ee;border-radius:5px;padding:14px 18px;margin:16px 0}
+.warn{background:#fdf6f5;border:1px solid #f0d6d3;border-left:4px solid var(--accent2)}
+.key{background:#fffbe9;border:1px solid #ecdfae;border-left:4px solid #d4a017}
+.good{background:#f2f8f2;border:1px solid #cfe4cf;border-left:4px solid #3b6d11}
+.q{background:#f7f4fb;border:1px solid #ddd3ec;border-left:4px solid #6b4fa0}
+.toc{background:#fff;border:1px solid var(--line);border-radius:5px;padding:18px 26px;margin:26px 0}
+.toc ol{margin:6px 0}
+.toc a{color:var(--accent);text-decoration:none}
+.toc a:hover{text-decoration:underline}
+.tag{display:inline-block;background:var(--accent);color:#fff;font-size:12px;
+  padding:2px 9px;border-radius:11px;margin-right:7px;vertical-align:middle}
+.tag.g{background:#3b6d11}.tag.r{background:#c0392b}.tag.a{background:#854f0b}
+.cap{text-align:center;color:#888;font-size:13px;margin:-8px 0 18px}
+.ref{font-size:14.6px;line-height:1.75}
+.ref li{margin:9px 0}
+.small{font-size:14.2px;color:var(--sub)}
+hr{border:none;border-top:1px dashed var(--line);margin:30px 0}
+</style>
+</head>
+<body>
+
+<h1>基于图论的 2D 地牢探索类游戏数值平衡</h1>
+<div class="sub">建模方法 · 指标体系 · 参数优化 · 实验设计 · 文献清单 · 论文与答辩</div>
+<div class="meta">毕业设计《基于图论的 2D 地牢探索类游戏数值平衡系统设计与实现》学生指导文档 · 2026-09-15 汇编</div>
+
+<div class="box key">
+<p style="margin:0 0 8px"><strong>本文档的使用说明</strong></p>
+<p style="margin:0 0 8px">本文档假定读者<strong>没有参与过此前任何讨论</strong>，也<strong>不需要预先掌握图论</strong>。文中出现的每一个术语、每一个公式、每一个数字，都从它在你这个游戏里的<em>具体含义</em>讲起，再上升到数学写法。你可以把它当成一篇完整的中文文献来读，也可以按目录跳到需要的章节。</p>
+<p style="margin:0">需要的数学基础只有：四则运算、平方、开方、对数（$\ln$）。所有超出这个范围的工具（变异系数、标准差、等级相关、方差分析、PageRank、多层网络）都会在文中<strong>就地给出定义和一个手算例子</strong>，不要求你事先会。</p>
+</div>
+
+<div class="toc">
+<strong>目录</strong>
+<ol>
+<li><a href="#c1">第 1 章　你的开题报告：现状、数值与四个待解答问题</a></li>
+<li><a href="#c2">第 2 章　四个问题的直接回答（概览）</a></li>
+<li><a href="#c3">第 3 章　零基础概念铺垫：DPS、TTK、Build、难度曲线</a></li>
+<li><a href="#c4">第 4 章　建模第一步：最小可验证系统与元件向量</a></li>
+<li><a href="#c5">第 5 章　建模第二步：三种图结构的关系</a></li>
+<li><a href="#c6">第 6 章　多层写法：论文怎么写，代码怎么写（包装层，可选）</a></li>
+<li><a href="#c7">第 7 章　两个矩阵：结构矩阵 A 与难度矩阵 M</a></li>
+<li><a href="#c8">第 8 章　评价指标体系：五个指标与阈值怎么定</a></li>
+<li><a href="#c9">第 9 章　参数如何调整：目标函数与搜索</a></li>
+<li><a href="#c10">第 10 章　实验设计与结果评估</a></li>
+<li><a href="#c11">第 11 章　现有研究与参考文献清单</a></li>
+<li><a href="#c12">第 12 章　论文写作、创新点提炼与答辩</a></li>
+<li><a href="#c13">第 13 章　你现在要做什么：任务清单与时间表</a></li>
+<li><a href="#c14">附录 A　术语大白话对照表</a></li>
+<li><a href="#c15">附录 B　开题报告数值全表</a></li>
+<li><a href="#c16">附录 C　常见错误清单（答辩前逐条自查）</a></li>
+</ol>
+</div>
+
+<h2 id="c1">第 1 章　你的开题报告：现状、数值与四个待解答问题</h2>
+
+<h3>1.1 项目现状（开题报告原文摘要）</h3>
+
+<p>你的开题报告题目是《<strong>基于图论的 2D 地牢探索类游戏数值平衡系统设计与实现</strong>》。截至开发第 27 天：</p>
+
+<table>
+<tr><th style="width:24%">项目</th><th>内容</th></tr>
+<tr><td>开发平台</td><td>Unity / Tuanjie Engine 1.10.1，C#</td></tr>
+<tr><td>代码规模</td><td>155 个 C# 脚本，12,440 行</td></tr>
+<tr><td>游戏场景</td><td>4 个：主世界 + 3 层地牢 + Boss 层</td></tr>
+<tr><td>怪物</td><td>4 种（碰撞怪 / 冲锋怪 / 自爆怪 / 细胞怪），每种分普通与精英两档；另有一个分阶段 Boss</td></tr>
+<tr><td>武器</td><td>3 种（空手·剑近战、Pistol 半自动、Burst Sniper 狙击），配 3 种子弹（白 / 蓝 / 红）</td></tr>
+<tr><td>装备</td><td>4 个部位（头部 / 手部 / 护甲 / 背包），共 8 件</td></tr>
+<tr><td>药水</td><td>4 种（回血 / 兴奋剂 / 加速 / 冷却缩减）</td></tr>
+<tr><td>流程</td><td>4 层完整流程：进入 → 探索 → 继续 / 撤离</td></tr>
+<tr><td>架构</td><td>Director 分层 + MessageBus 事件解耦</td></tr>
+</table>
+<div class="cap">表 1-1　项目现状（摘自开题报告第一、二、三部分）</div>
+
+<p>核心目标（开题报告原文）：<strong>通过图论方法对游戏内怪物、装备、技能等元素进行数值平衡建模，使游戏在不同 Build 组合下保持可控难度曲线。</strong></p>
+
+<h3>1.2 数值系统现状（开题报告第五部分）</h3>
+
+<p>开题报告已经给出了一套相当完整的数值表，这是你做建模的<strong>原材料</strong>。核心几项如下（完整表格见附录 B）：</p>
+
+<table>
+<tr><th style="width:22%">类别</th><th>数值</th></tr>
+<tr><td>玩家基础</td><td>基础血量 <strong>100</strong>；伤害随机系数 <strong>0.7~1.3</strong>；暴击倍率 <strong>1.5</strong></td></tr>
+<tr><td>防御公式</td><td><strong>$\max(1,\ 伤害 - 0.5 \times 护甲)$</strong><span class="tag r">有硬伤，见 7.5</span></td></tr>
+<tr><td>怪物（普通 / 精英）</td><td>见附录 B，血量 20~120，攻击 8~40，冷却 1.0 / 0.8</td></tr>
+<tr><td>Boss</td><td>最大血量 500；阶段二阈值 50% 血量；技能间隔 2 秒；阶段二移速 ×1.3</td></tr>
+<tr><td>药水</td><td>Health 50 金（回血 20）；Vitality 350 金（血 +30、体力 +50）；Acceleration 100 金（移速 +20%）；Haste 150 金（武器冷却 −20%）</td></tr>
+<tr><td>装备护甲值</td><td>皮手套 0 / 战术护腕 0 / 安全头盔 5 / 战术头盔 15 / 轻型背心 10 / <strong>战术护甲 50</strong> / 轻量背包 0 / 战术背包 0</td></tr>
+<tr><td>初始资源</td><td>基础护甲 0；初始金币 9000；基础槽位（护甲）2 格</td></tr>
+<tr><td>地牢</td><td>3 层（World2 → LargeWorld → BossWorld），地图 49×37 格</td></tr>
+</table>
+<div class="cap">表 1-2　开题报告 5.1–5.8 关键数值</div>
+
+<h3>1.3 你在开题报告第六部分提出的四个问题</h3>
+
+<p>开题报告第六部分"需要导师指导的问题"，原文四个问题及其子问题如下。<strong>本文档的绝大部分内容，就是为了回答这四个问题。</strong></p>
+
+<div class="box q">
+<p style="margin:0 0 6px"><strong>问题 1　图论建模方法</strong></p>
+<ul style="margin:0">
+<li>如何将游戏内 Build 组合、怪物克制关系建模为图结构？</li>
+<li>适合用哪种图论分析方法（最短路径 / 社区发现 / 网络流）来评估数值平衡？</li>
+</ul>
+</div>
+
+<div class="box q">
+<p style="margin:0 0 6px"><strong>问题 2　论文结构</strong></p>
+<ul style="margin:0">
+<li>游戏设计 + 图论应用这种交叉学科论文，结构应该怎么组织？</li>
+<li>数值平衡的实验设计应该怎么做？需要对比组吗？</li>
+</ul>
+</div>
+
+<div class="box q">
+<p style="margin:0 0 6px"><strong>问题 3　创新点提炼</strong></p>
+<ul style="margin:0">
+<li>如何把"独立开发游戏 + 图论数值平衡"讲成一个有学术价值的故事？</li>
+</ul>
+</div>
+
+<div class="box q">
+<p style="margin:0 0 6px"><strong>问题 4　工作量与答辩可行性</strong></p>
+<ul style="margin:0">
+<li>目前已完成 155 个脚本、12000 行代码、4 层地牢完整流程，这个工作量在本科毕设中是否足够？</li>
+<li>游戏开发 + 图论分析这种交叉方向，答辩时需要重点展示哪些内容？</li>
+</ul>
+</div>
+
+<div class="box warn">
+<p style="margin:0">你在 5.9 节自己写了一句："其实我也不懂，这是让 AI 帮我写的，主要还是看能为我提供什么建模工具。"<strong>这句坦诚的话恰好点出了你现在真正的缺口</strong>：你不缺建模工具（最短路径、社区发现、中心性都能调用库），你缺的是<em>一个能用你自己的数值算出结果、并且能说清每个数字来龙去脉的完整方案</em>。本文档提供的就是这套方案。</p>
+</div>
+
+<h3>1.4 目标句拆解："使游戏在不同 Build 组合下保持可控难度曲线"</h3>
+
+<p>这句话是整篇论文的题眼，必须逐词拆开，因为<strong>每一个词都对应一个具体的数学对象</strong>。拆不清，论文就没有落脚点。</p>
+
+<table>
+<tr><th style="width:16%">词</th><th style="width:38%">在这篇论文里指什么</th><th>对应的数学对象</th></tr>
+<tr><td><strong>Build</strong></td><td>玩家的一次装备决策：1 把武器 + 1 件护甲 + 1 件手部/头部/背包 + 1 瓶药水，构成的固定组合</td><td>节点集 $\mathcal{B}$ 中的一个元素 $b_i$</td></tr>
+<tr><td><strong>不同 Build</strong></td><td>不是 1 个，是一组可比较的备选方案（你的最小系统里是 6 个）</td><td>$\mathcal{B}=\{b_1,\ldots,b_n\}$，$n=6$</td></tr>
+<tr><td><strong>难度</strong></td><td>某 Build 在某层遭遇某怪时，"打不过"的程度</td><td>标量 $D = T_{kill}/T_{surv}$（见 7.2）</td></tr>
+<tr><td><strong>难度曲线</strong></td><td>同一个 Build 从第 1 层走到 Boss 层，难度随层变化的序列</td><td>矩阵 $M$ 的第 $i$ 行 $(M_{i,1},\ldots,M_{i,L})$</td></tr>
+<tr><td><strong>可控</strong></td><td>① 每一层难度落在心流区间内；② 逐层递增不回落；③ Boss 层显著更高</td><td>三个约束项 $P_{band}$ / $P_{mono}$ / $P_{boss}$</td></tr>
+<tr><td><strong>保持……一致</strong><span class="tag">隐含</span></td><td><strong>多条曲线之间要平行</strong>——这是"在不同 Build 下"真正的含义，也是你的创新点</td><td>$\sigma_{traj}$（见第 8 章）</td></tr>
+</table>
+<div class="cap">表 1-3　目标句拆解</div>
+
+<div class="box key">
+<p style="margin:0"><strong>一句话说清你要做什么</strong>：不是让某一个 Build 变强或变弱，而是让<strong>所有 Build 的难度曲线彼此平行</strong>——玩家选 A 还是选 B，会改变他"怎么打"，但不会改变他"第几层开始吃力"。</p>
+</div>
+
+<h2 id="c2">第 2 章　四个问题的直接回答（概览）</h2>
+
+<h3>2.0 全链路总览：六步，以及每步用到什么</h3>
+
+<p>先把整套方法压成一条直线。<strong>从游戏里的数值到"合格 / 不合格"的结论，一共六步</strong>。卡住的时候回来看这张表，先确认自己卡在第几步。</p>
+
+<table>
+<tr><th style="width:6%">步</th><th style="width:20%">做什么</th><th style="width:22%">输入</th><th style="width:22%">输出</th><th style="width:12%">用到图吗</th><th>在哪一章</th></tr>
+<tr><td class="c"><strong>①</strong></td><td><strong>建图</strong><br><span class="small">定性研究</span></td><td>元件表、Build 表、怪物表</td><td>图 $G$ 与<strong>结构矩阵 $A$</strong><br><span class="small">回答"谁跟谁有关"</span></td><td class="c"><strong>用</strong></td><td>第 5 章</td></tr>
+<tr><td class="c"><strong>②</strong></td><td><strong>TTK 解算</strong></td><td>元件数值 + 参数 $\theta$</td><td>每一对 (Build, 层) 的难度 $D$</td><td class="c">不用</td><td>7.2</td></tr>
+<tr><td class="c"><strong>③</strong></td><td><strong>组装难度矩阵</strong></td><td>上一步的 $D$</td><td><strong>难度矩阵 $M$</strong>（$n$ 行 × $L$ 列）<br><span class="small">回答"难度是多少"</span></td><td class="c">不用</td><td>7.3</td></tr>
+<tr><td class="c"><strong>④</strong></td><td><strong>算五个指标</strong></td><td>$M$</td><td>$\mathrm{CV}_{lat}$、$\sigma_{traj}$、$R_{traj}$、$\tau$、$F$</td><td class="c">不用</td><td>8.2</td></tr>
+<tr><td class="c"><strong>⑤</strong></td><td><strong>判定</strong></td><td>五个指标 + 阈值表</td><td>合格 / 不合格，以及哪一项不合格</td><td class="c">不用</td><td>8.4</td></tr>
+<tr><td class="c"><strong>⑥</strong></td><td><strong>不合格则调参</strong></td><td>不合格的那一项</td><td>新的 $\theta$ → <strong>回到第 ② 步</strong></td><td class="c">不用</td><td>8.5b、第 9 章</td></tr>
+</table>
+<div class="cap">表 2-0　六步闭环。注意：图只在第 ① 步出现，第 ②~⑥ 步全部只读 $M$，不再碰图</div>
+
+<div class="box key">
+<p style="margin:0 0 8px"><strong>一句话记住两个矩阵的分工</strong>：</p>
+<ul style="margin:0">
+<li><strong>$A$（结构矩阵）</strong>：第 ① 步建出来，第 ⑥ 步用来<em>解释</em>——"为什么不平衡、该动哪个元件"。<strong>它永远不进入判定。</strong></li>
+<li><strong>$M$（难度矩阵）</strong>：第 ②③ 步由 TTK 公式算出，第 ④⑤ 步被<em>打分</em>。<strong>判定只看它。</strong></li>
+</ul>
+</div>
+
+<h4>本文档出现的所有数学对象：哪些必需，哪些可删</h4>
+
+<p>这是最容易被绕晕的地方。本文档的数学对象分<strong>三层</strong>，性质完全不同：</p>
+
+<table>
+<tr><th style="width:10%">层</th><th style="width:26%">包含哪些东西</th><th style="width:30%">作用</th><th>删掉会怎样</th></tr>
+<tr>
+<td><span class="tag g">计算层</span><br><span class="small">必需</span></td>
+<td>参数向量 $\theta$、TTK 解析模型、难度矩阵 $M$、五个指标、目标函数 $J$</td>
+<td><strong>产生所有数字</strong>。判定合格与否完全由它们决定</td>
+<td class="c"><strong>删了整套方法就不存在</strong></td>
+</tr>
+<tr>
+<td><span class="tag">诊断层</span><br><span class="small">必需</span></td>
+<td>结构矩阵 $A$、PageRank / 加权度、代数连通度 $\lambda_2$、支配关系、冗余检测、谱分解</td>
+<td><strong>回答"为什么"</strong>。指标不合格时，靠它们定位到具体元件。不进入 $J$</td>
+<td class="c">能跑出结论，但答不出"该改哪个数值"，<strong>论文少一半</strong></td>
+</tr>
+<tr>
+<td><span class="tag r">包装层</span><br><span class="small">可选</span></td>
+<td>"多层网络"术语、超邻接矩阵、邻接张量、三类层间边、耦合系数 $\omega$、副本 vs 独立节点</td>
+<td><strong>只影响论文怎么写，不影响任何一个数字</strong>。它的唯一作用：让"层"这一维在图上显式存在，使论文可以称为"多层网络建模"</td>
+<td class="c"><strong>方法完全不受影响</strong>，只是题目不能带"多层网络"</td>
+</tr>
+</table>
+<div class="cap">表 2-1　三层对象及其必要性</div>
+
+<div class="box warn">
+<p style="margin:0 0 8px"><strong>关于包装层，说句实话</strong>：第 6 章讲的超邻接矩阵与邻接张量，<strong>不产生任何新数字</strong>——它们是同一个 $A$ 的两种写法（论文里写张量显得规范，代码里写矩阵方便计算），且结论与不分层时一致（实测耦合系数 $\omega$ 从 0.1 扫到 8.0，七个 Build 的名次一个都没变）。</p>
+<p style="margin:0">它存在的理由只有一条：<strong>你的题目里有"图论"甚至"多层网络"</strong>。评审要看图的层数、层内边、层间边，你需要这套术语来把第 ① 步写规范。<strong>除此之外它没有计算价值。赶时间可以整章跳过，只保留 6.3 的"副本 vs 独立节点"那个选择。</strong></p>
+</div>
+
+<div class="box good">
+<p style="margin:0"><strong>如果你只想记住一件事</strong>：真正跑起来的是 <em>$\theta$ →（TTK 公式）→ $M$ →（五个指标）→ 判定 →（不合格）→ 调 $\theta$</em> 这个环。<strong>图在第 ① 步把数据结构化，在第 ⑥ 步告诉你该动哪个数值，中间的计算过程跟图无关。</strong></p>
+</div>
+
+<p style="margin-top:14px">下面先给四个问题的<strong>结论版回答</strong>。每个回答都标注了详细论证所在的章节，读完后面章节再回来看这一页，会清楚很多。</p>
+
+<h3>2.1 问题 1：图论建模方法与分析方法</h3>
+
+<div class="box good">
+<p style="margin:0 0 8px"><strong>答：建一张"多层异质图"，用两个矩阵，配五个指标。不要用最短路径和网络流。</strong></p>
+<ul style="margin:0">
+<li><strong>节点分三层</strong>：元件层（武器 / 装备 / 药水）、Build 层、遭遇层（按地牢深度切成 4 片：3 层地牢 + Boss 层）。<span class="small">详见第 5 章</span></li>
+<li><strong>边分四类</strong>：协同边、冲突边、依赖边、适配（TTK）边；层与层之间另有<strong>三类</strong>层间边，其中只有两类必需。<span class="small">详见 5.4 与第 6 章（<strong>第 6 章是包装层，可选</strong>）</span></li>
+<li><strong>只有两个矩阵</strong>：结构矩阵 $A$（谁跟谁有关，是输入）和难度矩阵 $M$（难度是多少，是输出、是被优化的对象）。<span class="small">详见第 7 章</span></li>
+<li><strong>最短路径基本没用</strong>：你要问的是"哪些 Build 一样强"，不是"从 A 到 B 走哪条路最短"。<span class="small">详见 11.6 的误读辨析</span></li>
+<li><strong>网络流也没有对应物</strong>：游戏里没有守恒量在流。<span class="small">同上</span></li>
+<li><strong>真正有用的是三个</strong>：<span class="tag">中心性</span>（找关键数值项，如"轻甲是枢纽"）、<span class="tag">支配关系</span>（找通吃 Build）、<span class="tag">跨层一致性</span>（诊断视角，与 $\mathrm{CV}_{lat}$ 信息重叠，见 8.9）。<span class="small">详见 8.3 与 11.2</span></li>
+</ul>
+</div>
+
+<h3>2.2 问题 2：论文结构与实验设计</h3>
+
+<div class="box good">
+<p style="margin:0 0 8px"><strong>答：按"工程 → 建模 → 指标 → 优化 → 验证"五段式组织；做五个实验，每个只回答一个问题；对比组必须有。</strong></p>
+<ul style="margin:0">
+<li><strong>章节安排</strong>：绪论 → 相关工作 → 建模 → 指标 → 优化 → 实验 → 结论。其中第 3、4 章是主体。<span class="small">详见 12.1</span></li>
+<li><strong>五个实验</strong>：E1 基线诊断、E2 优化前后对比（<em>门面图</em>）、E3 消融（证明 $\sigma_{traj}$ 不可省）、E4 敏感度、E5 BOT 验证。<span class="small">详见 10.2</span></li>
+<li><strong>对比组怎么设</strong>：不是"有没有用图论"的对比，而是<strong>三组基线</strong>——① 现状数值（未优化）；② 只用 $\mathrm{CV}_{lat}$ 优化（消融组）；③ 随机基线（±20% 扰动 100 次）。第三组是你阈值合法性的来源，不能省。<span class="small">详见 8.6</span></li>
+</ul>
+</div>
+
+<h3>2.3 问题 3：创新点提炼</h3>
+
+<div class="box good">
+<p style="margin:0 0 8px"><strong>答：创新点不在"用了图论"，而在"提出了难度曲线一致性指标 $\sigma_{traj}$，并证明它能诊断出水平指标诊断不出的问题"。</strong></p>
+<ul style="margin:0">
+<li><strong>为什么这是创新</strong>：现有动态难度调整（DDA）文献做的是"给<em>每一个玩家</em>定制一条曲线"；博弈派与优化派做的是"在<em>同一时刻</em>各策略强度是否相等"。<strong>没有人做过"让多个 Build 的难度曲线彼此平行"。</strong><span class="small">详见 11.3</span></li>
+<li><strong>讲故事的框架</strong>：独立开发游戏 → 发现"只测单层平衡不够" → 提出跨层指标 → 用图结构定位病灶 → 优化 → 复检。<span class="small">详见 12.2</span></li>
+<li><strong>分量排序</strong>：方法创新（$\sigma_{traj}$）&gt; 工程创新（完整可运行 Demo + 自动化管线）&gt; 实践创新（把结论回填进 Config）。<span class="small">详见 12.2</span></li>
+</ul>
+</div>
+
+<h3>2.4 问题 4：工作量与答辩</h3>
+
+<div class="box good">
+<p style="margin:0 0 8px"><strong>答：工作量远超本科毕设合格线；答辩要展示的不是代码量，是"可复核性"。</strong></p>
+<ul style="margin:0">
+<li><strong>工作量</strong>：12,440 行 + 4 层完整流程 + 一套平衡分析管线，在本科学校通常属于优秀档。<strong>但不要靠行数说话</strong>——答辩老师更在意"这个数字你是怎么算出来的"。<span class="small">详见 12.3</span></li>
+<li><strong>答辩核心</strong>：<em>当场手算复核</em>。老师问"$D=1.205$ 怎么来的"，你能从 ATK 一步步推到结果，这就是最有说服力的展示。<span class="small">详见 7.5 的完整算例</span></li>
+<li><strong>必答的三个高频问题</strong>：① 你这个阈值哪来的？② 图论起了什么不可替代的作用？③ 没有真人试玩怎么验证？<span class="small">详见 12.3</span></li>
+</ul>
+</div>
+
+<h2 id="c3">第 3 章　零基础概念铺垫：DPS、TTK、Build、难度曲线</h2>
+
+<p>本章不谈图论，先把"数值"这两个字讲清楚。后面所有公式都建立在这一章的量之上。</p>
+
+<h3>3.1 DPS 是什么</h3>
+
+<p><strong>DPS</strong>（Damage Per Second，每秒伤害）是"输出能力"的通用度量。它把"单次伤害"和"打多快"合成一个数：</p>
+
+<div class="formula">$$\mathrm{DPS} = \frac{\text{单次伤害}}{\text{攻击间隔（冷却）}}$$</div>
+
+<p>用你游戏里的真实数字举例：Boss 的技能间隔是 2 秒，若 Boss 每次技能打 40 点，则 $\mathrm{DPS}_{Boss}=40/2=20$。再看怪物表：自爆怪<strong>精英</strong>攻击 40、冷却 0.8，则 $\mathrm{DPS}=40/0.8=50$；自爆怪<strong>普通</strong>攻击 20、冷却 1.0，$\mathrm{DPS}=20$。</p>
+
+<div class="box key">
+<p style="margin:0"><strong>为什么必须用 DPS 而不是"攻击力"</strong>：自爆怪精英的攻击力是普通的 2 倍（20→40），但它的 <em>DPS</em> 是普通的 2.5 倍（20→50），因为冷却还从 1.0 缩到 0.8。<strong>只看攻击力会低估一半的难度来源。</strong>这是开题报告数值表里最容易读错的地方。</p>
+</div>
+
+<h4>你游戏里 8 种怪的 DPS 全表</h4>
+
+<table>
+<tr><th style="width:16%">怪物</th><th style="width:12%">档位</th><th style="width:11%">攻击</th><th style="width:11%">冷却</th><th style="width:12%">DPS</th><th>说明</th></tr>
+<tr><td rowspan="2">碰撞怪</td><td>普通</td><td class="num">8</td><td class="num">1.0</td><td class="num">8.0</td><td rowspan="8">DPS = 攻击 / 冷却。<br>精英档<strong>冷却统一为 0.8</strong>，所以实际强度提升是<br>"攻击倍率 ÷ 0.8"，比表上看起来的更大。</td></tr>
+<tr><td>精英</td><td class="num">15</td><td class="num">0.8</td><td class="num">18.75</td></tr>
+<tr><td rowspan="2">冲锋怪</td><td>普通</td><td class="num">12</td><td class="num">1.0</td><td class="num">12.0</td></tr>
+<tr><td>精英</td><td class="num">25</td><td class="num">0.8</td><td class="num">31.25</td></tr>
+<tr><td rowspan="2">自爆怪</td><td>普通</td><td class="num">20</td><td class="num">1.0</td><td class="num">20.0</td></tr>
+<tr><td>精英</td><td class="num">40</td><td class="num">0.8</td><td class="num">50.0</td></tr>
+<tr><td rowspan="2">细胞怪</td><td>普通</td><td class="num">8</td><td class="num">1.0</td><td class="num">8.0</td></tr>
+<tr><td>精英</td><td class="num">12</td><td class="num">0.8</td><td class="num">15.0</td></tr>
+</table>
+<div class="cap">表 3-1　怪物 DPS 换算（由开题报告 5.3 表计算）</div>
+
+<h3>3.2 TTK 是什么，为什么它是核心</h3>
+
+<p><strong>TTK</strong>（Time To Kill，击杀耗时）是"打死对方要几秒"。但一场遭遇有<strong>两个</strong>方向的时间：<em>你打死怪要多久</em>，和<em>怪打死你要多久</em>。这两个时间的<strong>比值</strong>就是难度。</p>
+
+<div class="formula">
+$$T_{kill} = \frac{HP_{怪}}{\mathrm{DPS}_{玩家}}, \qquad T_{surv} = \frac{HP^{eff}_{玩家}}{k \cdot \mathrm{DPS}_{怪}}$$
+</div>
+
+<ul>
+<li>$T_{kill}$（击杀耗时）：怪血越厚、你输出越低，越久。</li>
+<li>$T_{surv}$（存活耗时）：你血越厚、怪输出越低，撑得越久。$k$ 是同屏怪的数量（开题报告未给，建模时按 $k=1$ 起算）。</li>
+<li>$HP^{eff}$ 是<strong>有效血量</strong>：基础血量 100 加上装备加成，再经过护甲减伤折算后的血量。护甲越高，$HP^{eff}$ 越大。</li>
+</ul>
+
+<p><strong>举例</strong>：玩家血量 100，无护甲；面对自爆怪精英（DPS 50），$T_{surv}=100/50=2.0$ 秒。若玩家 DPS 为 30，自爆怪精英血量 55，则 $T_{kill}=55/30\approx1.83$ 秒。玩家在 1.83 秒内杀死怪，而自己能撑 2.0 秒——<strong>险胜</strong>。</p>
+
+<h3>3.3 难度 $D$ 的定义：为什么用比值</h3>
+
+<div class="formula">
+$$D(\text{Build}_i,\ \text{层 }l) = \frac{T_{kill}}{T_{surv}}$$
+</div>
+
+<p>$D$ 是一个<strong>无量纲</strong>的比值，读法非常直观：</p>
+
+<table>
+<tr><th style="width:18%">$D$ 的取值</th><th style="width:30%">含义</th><th>玩家体感</th></tr>
+<tr><td>$D &lt; 0.3$</td><td>杀怪只需存活时间的 30%</td><td>太简单，无聊</td></tr>
+<tr><td>$D \in [0.3,\ 0.95]$</td><td><strong>心流通道</strong></td><td>紧张但打得过，最理想的区间</td></tr>
+<tr><td>$D \approx 1.0$</td><td>杀怪耗时 ≈ 自己能撑的时间</td><td>五五开，生死一线</td></tr>
+<tr><td>$D &gt; 1.0$</td><td>还没杀死怪自己就死了</td><td>打不过</td></tr>
+</table>
+<div class="cap">表 3-2　难度值 $D$ 的读法</div>
+
+<div class="box key">
+<p style="margin:0"><strong>为什么用比值而不是差值</strong>：比值是<strong>尺度无关</strong>的。把玩家血量和怪血量同时翻一倍，$T_{kill}$ 和 $T_{surv}$ 都翻倍，$D$ 不变——这符合直觉：整体数值放大不改变难度。而用差值 $T_{kill}-T_{surv}$ 会跟着整体缩放乱变，没法跨层比较。</p>
+</div>
+
+<p>这个 $D$ 的构造不是我们自创的：Corrêa 等人 2022 年提出的 DCGM 模型把难度定义为"<strong>难度 vs 玩家表现的比值</strong>"，与本式同型（见 11.4 文献 [12]）。引用时写"受 DCGM 启发"即可。</p>
+
+<h3>3.4 Build 到底是什么</h3>
+
+<p><strong>Build</strong>（配装流派）是玩家的一次<strong>完整装备决策</strong>。在你的游戏里，一个 Build 至少包含：</p>
+
+<ul>
+<li><strong>1 把武器</strong>（空手·剑 / Pistol / Burst Sniper 三选一）</li>
+<li><strong>1 件护甲</strong>（轻型背心 10 / 战术护甲 50 / 不穿）</li>
+<li><strong>1 件头部</strong>（安全头盔 5 / 战术头盔 15 / 不戴）</li>
+<li><strong>1 瓶药水</strong>（Health / Vitality / Acceleration / Haste 四选一）</li>
+</ul>
+
+<p>为什么"武器 + 装备 + 药水"能凑成一个<em>节点</em>，而不是三件独立的东西？因为<strong>它们不是简单相加</strong>：</p>
+
+<div class="box">
+<p style="margin:0 0 6px"><strong>协同与冲突的直观例子</strong></p>
+<ul style="margin:0">
+<li><strong>Burst Sniper + Haste（冷却 −20%）</strong>：狙击枪开镜慢，冷却缩减直接提升输出 → <em>强协同</em></li>
+<li><strong>剑 + Haste</strong>：剑是近战普攻，没有技能冷却可缩减 → <em>药水完全浪费</em>，这个组合应当被判为无效</li>
+<li><strong>战术护甲 50 + 战术头盔 15</strong>：护甲叠到 65，在固定减法公式下几乎免疫所有怪 → <em>支配性组合</em></li>
+<li><strong>轻型背心 + Acceleration（移速 +20%）</strong>：两者都服务于"跑得快"这个同一目的 → 收益重叠，<em>没有协同</em></li>
+</ul>
+</div>
+
+<p>这四条正是图里<strong>边</strong>要表达的东西（详见 5.4）。</p>
+
+<h3>3.5 难度曲线：横轴纵轴各是什么</h3>
+
+<p>把某个 Build 从第 1 层打到 Boss 层，每一层算一个 $D$，就得到<strong>一条难度曲线</strong>：</p>
+
+<div class="formula">
+$$\text{Build}_i \text{ 的难度曲线} = \big(M_{i,1},\ M_{i,2},\ M_{i,3},\ M_{i,\text{Boss}}\big)$$
+</div>
+
+<ul>
+<li><strong>横轴</strong>：地牢层 $l \in \{1,2,3,\text{Boss}\}$（对应你的 World2 → LargeWorld → 第三层 → BossWorld）</li>
+<li><strong>纵轴</strong>：难度 $D$</li>
+<li><strong>一条线</strong>：一个 Build</li>
+</ul>
+
+<p>把所有 Build 的曲线画在同一张图上，就是你论文的<strong>门面图</strong>。理想形态是：<em>几条线大致平行地向上走，全部落在心流通道 $[0.3,0.95]$ 之内，Boss 层统一抬高</em>。</p>
+
+<div class="box key">
+<p style="margin:0"><strong>曲线要"平行"，不是要"重合"</strong>。重合意味着选什么 Build 都一样，玩家的<em>选择失去意义</em>。我们要的是：不同 Build 各有各的打法，但<strong>难度上升的节奏一致</strong>——谁也不会在某一层突然崩掉或突然变轻松。这个区分在 8.8 会再讲一次，它是个很容易被答辩追问的点。</p>
+</div>
+
+<h3>3.6 需要的统计工具（就地讲解，不要求预习）</h3>
+
+<h4>① 均值与标准差</h4>
+
+<p>给定一组数 $x_1,\ldots,x_n$，均值 $\bar x=\frac1n\sum x_i$ 是"平均水平"；标准差衡量"散得有多开"：</p>
+
+<div class="formula">
+$$\mathrm{std}=\sqrt{\frac{1}{n-1}\sum_{i=1}^{n}(x_i-\bar x)^2}$$
+</div>
+
+<p><strong>手算例子</strong>：三个 Build 在第 1 层的难度是 $0.50,\ 0.60,\ 0.70$。均值 $=0.60$。偏差是 $-0.10,\ 0,\ +0.10$，平方和 $=0.01+0+0.01=0.02$。$\mathrm{std}=\sqrt{0.02/2}=0.10$。所以"这三个 Build 的难度平均 0.60，彼此相差约 0.10"。</p>
+
+<h4>② 变异系数 CV</h4>
+
+<p>标准差是<strong>有单位</strong>的：难度普遍在 2.0 时，标准差 0.4 不算大；难度普遍在 0.3 时，标准差 0.4 就是灾难。为了去掉这个尺度影响，把标准差除以均值：</p>
+
+<div class="formula">
+$$\mathrm{CV}=\frac{\mathrm{std}}{\mathrm{mean}}$$
+</div>
+
+<p><strong>CV 读法</strong>：CV = 0.20 表示"各 Build 的难度相差约平均水平的 20%"。它无量纲，可以跨层比较。<strong>这就是"什么叫 CV"的完整答案。</strong></p>
+
+<div class="box">
+<p style="margin:0"><strong>CV 本身不需要引论文</strong>：变异系数是统计学标准工具，正文写"采用变异系数 $CV=\sigma/\mu$ 度量相对离散度"，引一本应用统计学教材即可。<strong>要引的是"用它做平衡指标"这个决策</strong>——那是文献 [4] Wang &amp; Zhang 2021（见 11.4）。</p>
+</div>
+
+<h4>③ 对数 $\ln$，以及为什么我们要取对数</h4>
+
+<p>$\ln$ 是自然对数，$\ln(e^x)=x$。它对我们的用处是把<strong>倍数变成加法</strong>：</p>
+
+<div class="formula">
+$$\ln\frac{M_{i,l+1}}{M_{i,l}} = \ln M_{i,l+1} - \ln M_{i,l}$$
+</div>
+
+<p>取对数有两个不可替代的好处，必须写进论文：</p>
+
+<ul>
+<li><strong>对称性</strong>：×1.5（变难）与 ×0.67（变简单）在原始尺度上分别是 $+0.5$ 和 $-0.33$，不对称；取对数后是 $+0.405$ 与 $-0.405$，惩罚相同。</li>
+<li><strong>可加性</strong>：$\Delta_{1\to3}=\Delta_{1\to2}+\Delta_{2\to3}$，因此可以做<em>方差分解</em>——把总的不一致拆到每一层上（见 8.7）。</li>
+</ul>
+
+<h4>④ Kendall $\tau$（等级相关）</h4>
+
+<p>$\tau$ 衡量"两组排名的吻合程度"，取值 $[-1,1]$。$\tau=1$ 表示排名完全一致，$\tau=-1$ 表示完全反转。</p>
+
+<p><strong>算法（手算可行）</strong>：把所有 Build 两两配对（$n$ 个 Build 有 $n(n-1)/2$ 对）。对每一对 $(i,j)$，若两层中 $i$ 与 $j$ 的<em>先后关系一致</em>（都是 $i$ 在前，或都是 $j$ 在前），记 $+1$；若颠倒，记 $-1$。$\tau = (一致对数 - 颠倒对数)/总对数$。</p>
+
+<p><strong>例子</strong>：第 1 层排名 $[B1,B2,B3]$，第 2 层也是 $[B1,B2,B3]$ → 3 对全部一致 → $\tau=1$。若第 2 层变成 $[B3,B1,B2]$，则 $(B1,B3)$ 这一对颠倒了 → $\tau=(2-1)/3=0.33$。</p>
+
+<div class="box key">
+<p style="margin:0"><strong>$\tau$ 是诊断两种"病"的关键</strong>：$\tau\approx1$ 说明各 Build 只是<em>强度拉开</em>（数值病，调数值就能治）；$\tau&lt;0.8$ 说明<em>强弱反转</em>了（机制病，必须改机制，调数值没用）。这个区分在 8.3 会用到。</p>
+</div>
+
+<h4>⑤ 单因素方差分析 ANOVA</h4>
+
+<p>用来回答"这些差异是真的，还是随机噪声"。做法：每个（Build, 层）格子跑 $k$ 局（比如 200 局），得到 $k$ 个难度值。计算</p>
+
+<div class="formula">
+$$F=\frac{MS_{between}}{MS_{within}}$$
+</div>
+
+<p>其中 $MS_{between}$ 是"不同 Build 之间"的方差，$MS_{within}$ 是"同一个 Build 内部（随机波动）"的方差。$F$ 越大说明组间差异越是货真价实。查 $F$ 分布表得临界值 $F_{crit}$，$F&gt;F_{crit}$ 则认为差异显著。</p>
+
+<p><strong>为什么必须有这一项</strong>：你的伤害有 0.7~1.3 的随机系数，还有暴击。答辩老师一定会问"你算出来的差异，会不会只是伤害随机数抖出来的？"ANOVA 就是这个问题的标准答案。</p>
+
+<h2 id="c4">第 4 章　建模第一步：最小可验证系统与元件向量</h2>
+
+<h3>4.1 为什么不要一上来就建大图</h3>
+
+<p>你的游戏有 3 武器 × 8 装备 × 4 药水 × 8 怪 × 4 层，如果全部建模，节点数轻松过百，边数上千。<strong>这样建出来的图有两个致命问题</strong>：</p>
+
+<ol>
+<li><strong>不可复核</strong>：答辩老师问"这个数怎么来的"，你答不上来，只能说"程序跑的"。</li>
+<li><strong>不可归因</strong>：指标一旦超标，你不知道是哪个数值的锅。</li>
+</ol>
+
+<p>所以第一步是做一个<strong>最小可验证系统</strong>（Minimal Viable System，MVS）：一个手算能复核的最小模型。论文里把它作为"方法说明算例"，真实全量系统作为"实验数据集"——这是标准做法，不算偷工减料。</p>
+
+<div class="formula">
+2 武器 × 2 装备 × 2 药水 × 2 场景 → 名义 8 种组合，扣除冲突后 <strong>6 个有效 Build</strong> → 难度矩阵 6 × 2 = <strong>12 个格子</strong>
+</div>
+
+<p>12 个格子意味着<strong>每一个数字都能手算验证</strong>。这是毕设最值钱的资产。</p>
+
+<h3>4.2 MVS 的元件表</h3>
+
+<p>下面是 MVS 使用的元件定义（取自已实现的 <code>minimal_balance_model.py</code> 第 37–48 行）。</p>
+
+<div class="box warn">
+<p style="margin:0"><strong>注意：MVS 的数值是"说明算例用的简化值"，不是你开题报告里的真实数值。</strong>两套数据的分工是：<strong>MVS</strong> → 用于论文第 3、4 章的可复核算例；<strong>开题报告真实数值</strong> → 用于第 5 章实验。<strong>论文中务必标注每段数据来自哪一套，切不可混用。</strong></p>
+</div>
+
+<table>
+<tr><th style="width:14%">元件</th><th style="width:34%">属性向量</th><th style="width:15%">作用维度</th><th>说明</th></tr>
+<tr><td>W1 短剑</td><td>ATK 12.0 / APS 1.0 / RNG 1.5 / $\kappa$ 0.0</td><td>OUT（输出）</td><td>无技能，冷却缩减项恒为 1 → <strong>与冷却药水冲突</strong></td></tr>
+<tr><td>W2 法杖</td><td>ATK 7.0 / APS 1.1 / RNG 6.0 / $\kappa$ 0.6</td><td>OUT + CYC</td><td><strong>ATK 是核心调参旋钮</strong>（优化后取 12.0）</td></tr>
+<tr><td>E1 板甲</td><td>HP +40 / DEF 6.0 / SPD −0.15</td><td>SUS（生存）</td><td>DEF 是旋钮（优化后 4.0）</td></tr>
+<tr><td>E2 疾行靴</td><td>HP −10 / DEF 1.0 / SPD +0.55</td><td>MOB（机动）</td><td>与板甲<strong>互斥</strong>（构成冲突对）</td></tr>
+<tr><td>P1 速度药水</td><td>$\Delta$SPD +0.40</td><td>MOB</td><td>与疾行靴<strong>同维度 → 协同权 1.0</strong>（移速溢出）</td></tr>
+<tr><td>P2 冷却药水</td><td>CDR 0.35</td><td>CYC（循环）</td><td>与短剑冲突（$\kappa=0$ 代入恒为 1）</td></tr>
+</table>
+<div class="cap">表 4-1　MVS 元件属性与作用维度</div>
+
+<h3>4.3 作用维度向量：为什么不能用余弦相似度</h3>
+
+<p>一个很自然的想法是：把每个元件的属性写成向量，用<strong>余弦相似度</strong>衡量两个元件像不像，越不像越协同。这个想法<strong>在你的游戏里是错的</strong>。</p>
+
+<p>原因：属性向量<strong>维度对不上</strong>。短剑是 [攻击 12.0, 攻速 1.0, 射程 1.5]，板甲是 [血量 +40, 防御 6.0, 移速 −0.15]。这两个向量的第 1 个分量"攻击"和"血量"根本不是同一个量，算余弦相似度没有意义。</p>
+
+<div class="box good">
+<p style="margin:0 0 6px"><strong>正确做法：改用"作用维度正交度"</strong>。不看属性数值，只看<em>这件装备是服务于什么的</em>。定义四个作用维度：</p>
+<div class="formula" style="margin:6px 0">$$\mathbf d \in \{\text{OUT 输出},\ \text{SUS 生存},\ \text{MOB 机动},\ \text{CYC 循环}\}$$</div>
+<p style="margin:0">每件装备在这四维上取 0/1：短剑 $=[1,0,0,0]$，板甲 $=[0,1,0,0]$，疾行靴 $=[0,0,1,0]$，速度药水 $=[0,0,1,0]$，法杖 $=[1,0,0,1]$，冷却药水 $=[0,0,0,1]$。这时余弦相似度才有意义，它衡量的是"<strong>两件装备是否服务于同一个目的</strong>"。</p>
+</div>
+
+<div class="box key">
+<p style="margin:0"><strong>这个改法带来一个反直觉但很有说服力的结论（可以直接写进论文）</strong>：疾行靴 + 速度药水的协同权 $w^{syn}=1.0$，即<strong>完全没有协同</strong>。直觉上"跑得快 + 更快"应该很强，但两者同属 MOB 维度，移速是溢出的，叠加速度不产生新能力。<strong>这是"作用维度正交度"才能得出的结论，余弦相似度给不出来。</strong></p>
+</div>
+
+<h3>4.4 六个 Build 是算出来的，不是挑出来的</h3>
+
+<p>这是最容易被质疑、也最值得在论文里展开的一步：<strong>6 个 Build 不是"我选了 6 个"，是"8 个组合里有 2 个被规则剔除"。</strong></p>
+
+<p>以短剑为例：短剑无技能（$\kappa=0$），把冷却药水的 CDR 代入它的伤害公式后，冷却缩减项</p>
+
+<div class="formula">
+$$cd_{mult} = 1 + \kappa\left(\frac{1}{1-CDR}-1\right) = 1 + 0\times(\cdots) = 1$$
+</div>
+
+<p>恒等于 1，即这瓶药水<strong>对它完全没有作用</strong>。因此该组合的冲突权 $w^{con}=0$，被判定为无效组合，而不是"策划觉得不好"。</p>
+
+<div class="box">
+<p style="margin:0 0 6px"><strong>论文表述模板（可直接用）</strong></p>
+<p style="margin:0">令元件集 $C$，组合 $b\subseteq C$ 合法当且仅当 $\forall u,v\in b,\ w^{con}(u,v)&gt;0$。由此得到的合法组合集 $\mathcal{B}$ 即为 Build 节点集，$|\mathcal{B}|=6$。</p>
+</div>
+
+<p>在你的真实游戏里，同样的规则可以剔除：<em>剑 + Haste（冷却缩减）</em>、<em>战术护甲 + 战术头盔</em>（若设槽位上限）等。这样你就有一套<strong>自动生成 Build 集</strong>的规则，而不是手工列举——这也是论文里的一个加分点。</p>
+
+<h2 id="c5">第 5 章　建模第二步：三种图结构的关系</h2>
+
+<h3>5.1 二部图、异质图、多层网络不是三个并列方案</h3>
+
+<p><strong>先定位一下这一章</strong>：它属于<em>包装层</em>（见 2.0 表 2-1）。三种结构的关系、层的切分、Build 能否当节点——这些是<strong>必须回答的建模问题</strong>（不回答会被质疑"你凭什么这么建图"），但它们不产生新数字。真正产生数字的是第 7 章的 $M$。</p>
+
+<p>这是这几轮讨论里最容易卡住的地方。<strong>它们是包含关系，不是竞争关系</strong>：</p>
+
+<table>
+<tr><th style="width:16%">结构</th><th style="width:34%">定义</th><th>关系</th></tr>
+<tr><td>二部图</td><td>两类节点，<strong>只有异侧边</strong>（如"Build ↔ 怪"）</td><td>⊂ 异质图</td></tr>
+<tr><td>异质图</td><td>多类节点，<strong>任意类型之间都可连边</strong></td><td>二部图 + 同侧边</td></tr>
+<tr><td>多层网络</td><td>异质图 + <strong>按"层"切片</strong>，区分层内边与层间边</td><td>异质图 + 分层结构</td></tr>
+</table>
+<div class="cap">表 5-1　三种结构的关系</div>
+
+<div class="box key">
+<p style="margin:0"><strong>统一写法（建议直接采用，三种结构全用上还不重复）</strong>：<br>
+本文采用<strong>多层异质图</strong> $G=(V,E,\mathcal{L})$，层集 $\mathcal{L}=\{\text{元件层},\ \text{Build层},\ \text{遭遇层}_1,\ldots,\text{遭遇层}_4\}$；<strong>二部图是其 Build–遭遇子块的投影</strong>。</p>
+</div>
+
+<h3>5.2 层集怎么分——对应你的地牢</h3>
+
+<table>
+<tr><th style="width:18%">层</th><th style="width:20%">节点</th><th style="width:24%">层内边</th><th>层间边</th></tr>
+<tr><td>元件层</td><td>3 武器 + 8 装备 + 4 药水<br><span class="small">（MVS 中为 2+2+2）</span></td><td>协同边 / 冲突边</td><td>→ Build 层（依赖边）</td></tr>
+<tr><td>Build 层</td><td>$\mathcal{B}$ 中的合法组合<br><span class="small">（MVS 中 6 个 + 1 个对照）</span></td><td>共享元件 Jaccard 相似度</td><td>↔ 遭遇层（TTK 边 + 威胁回流边）</td></tr>
+<tr><td>遭遇层<br><span class="small">按深度切 4 片</span></td><td>4 深度 × 4 种怪<br><span class="small">（含普通 / 精英则 8）</span></td><td>—</td><td>切片之间的递进耦合边（权 $\omega$）</td></tr>
+</table>
+<div class="cap">表 5-2　多层异质图的节点与边设计</div>
+
+<div class="box warn">
+<p style="margin:0"><strong>遭遇层的 4 片对应你的 4 个场景</strong>：主世界之外的三层地牢 + Boss 层。开题报告 5.8 写"地牢层数 3 层（World2→LargeWorld→BossWorld）"，第二部分又写"4 个场景（主世界 + 3 层地牢 + Boss 层）"，<strong>两处口径需向自己确认一致</strong>。本文档按 <em>4 个遭遇切片 $L_1,L_2,L_3,L_{\text{Boss}}</em>$ 处理，论文里要写清楚每一片对应哪个场景、放哪些怪。</p>
+</div>
+
+<h3>5.3 为什么 Build 可以算作节点（一个必须回答的质疑）</h3>
+
+<p>你可能已经想到：Build 明明是"武器 + 装备 + 药水"的<em>组合</em>，它不就是一堆边的集合吗？为什么能当成一个点？</p>
+
+<p><strong>答：因为我们要问的问题，是"关于组合"的问题。</strong>举三个必须把 Build 当节点才能问的问题：</p>
+
+<ul>
+<li>"<em>哪些 Build 强度接近？</em>" → 需要 Build 之间的距离 / 相似度 → 只能是点点关系</li>
+<li>"<em>哪个 Build 在所有层都最强？</em>" → 需要对 Build 排序 → 排序的对象必须是点</li>
+<li>"<em>Build A 与 Build B 的难度曲线是否平行？</em>" → 需要两条曲线可比较 → 每条曲线归属于一个点</li>
+</ul>
+
+<p>反过来说，如果不把 Build 建成节点，那么"武器 → 怪"这条边就只能表示"这把武器打这只怪"，而无法表示"这套配装打这只怪"——<strong>而协同与冲突恰恰只存在于配装层面</strong>（板甲 + 疾行靴互斥，这个事实不属于任何单个元件）。</p>
+
+<div class="box">
+<p style="margin:0"><strong>一个类比</strong>：菜谱也是"食材的组合"，但在"餐厅关系网络"里，我们把"宫保鸡丁"当成一个节点，因为我们要比较的是<em>菜品之间</em>的相似度与受欢迎程度，而不是食材之间。Build 同理。</p>
+</div>
+
+<h3>5.4 四类层内边的权重设计</h3>
+
+<table>
+<tr><th style="width:13%">边类型</th><th style="width:33%">权重公式</th><th>设计要点</th></tr>
+<tr>
+<td><strong>协同边</strong></td>
+<td>$w^{syn} = 1 + 0.5\big(1-\cos(\mathbf d_u,\mathbf d_v)\big)$</td>
+<td>用<strong>作用维度向量</strong>而非属性向量（见 4.3）。两件装备服务于不同目的 → 维度正交 → 余弦 0 → 权 1.5（强协同）；服务同一目的 → 余弦 1 → 权 1.0（无协同）</td>
+</tr>
+<tr>
+<td><strong>冲突边</strong></td>
+<td>$w^{con} = 0$（或按机制剔除组合）</td>
+<td><strong>必须由机制推导，不能由策划指定</strong>。例：剑的 $\kappa=0$ 使冷却缩减项恒为 1，故剑 + Haste 冲突</td>
+</tr>
+<tr>
+<td><strong>依赖边</strong></td>
+<td>元件 → Build，权重 $\in[0,1]$，按各元件"体量"（magnitude）占比归一化</td>
+<td>表示这个元件在这个 Build 里占多大分量。板甲（体量 0.70）比速度药水（0.40）占比高</td>
+</tr>
+<tr>
+<td><strong>适配 / TTK 边</strong></td>
+<td>Build ↔ 怪物，权重取 TTK 优势比，$\in[0,3]$，双向可不同</td>
+<td>去程：$1/D$（越难打权越小）；回程：$D$（威胁回流）。<strong>双向必须都建</strong>，见 6.2</td>
+</tr>
+</table>
+<div class="cap">表 5-3　四类层内边</div>
+
+<h3>5.5 图算法用哪些：三个有用，两个没用</h3>
+
+<table>
+<tr><th style="width:18%">算法</th><th style="width:12%">是否用</th><th>理由与产出</th></tr>
+<tr><td><strong>中心性</strong><br><span class="small">（加权度 / PageRank）</span></td><td class="c"><span class="tag g">核心</span></td><td>回答"<strong>哪个数值项是枢纽</strong>"。实测结论：轻甲 2.110 &gt; 战甲 1.790 &gt; 近战刀 1.493 &gt; 狙击枪 1.486 &gt; 手枪 0.855。——轻甲影响面最大，是调参的第一抓手</td></tr>
+<tr><td><strong>支配关系</strong><br><span class="small">（向量逐项比较）</span></td><td class="c"><span class="tag g">核心</span></td><td>回答"<strong>有没有通吃 Build</strong>"。实测：B3（近战 + 战术护甲 50）在 8/8 项上全部最优 → 支配策略，必须削</td></tr>
+<tr><td><strong>跨层一致性</strong><br><span class="small">（versatility 类指标）</span></td><td class="c"><span class="tag">诊断</span></td><td>回答"<strong>有没有偏科 Build</strong>"。实测：B7 versatility = 0.593，$\tau(D_1,\text{Boss})=0.714&lt;0.8$ → <strong>检出强弱反转</strong>。<br><span class="small">⚠ 它与 $\mathrm{CV}_{lat}$ 信息高度重叠（同一只怪在各层是否一致），<strong>当诊断视角写，不要当新指标</strong>，见 8.9</span></td></tr>
+<tr><td>最短路径</td><td class="c"><span class="tag r">不用</span></td><td>游戏里不存在"从 A 走到 B 的最短路"这一问题；Build 之间没有可达性概念，只有相似度</td></tr>
+<tr><td>网络流</td><td class="c"><span class="tag r">不用</span></td><td>网络流要求边上流过的是<strong>守恒量</strong>（流量、费用）。数值平衡里没有守恒量——伤害不守恒，资源只在玩家一侧单向消耗</td></tr>
+</table>
+<div class="cap">表 5-4　图算法选型（开题报告 5.9 与问题 1 的直接回答）</div>
+
+<div class="box warn">
+<p style="margin:0"><strong>社区发现可以用，但要说清产出的语义。</strong>它能给出"Build 流派分群"（如"重甲流 / 疾行流 / 爆发流"），这个结论能支撑 Riot 提出的 meta diversity targets。但它<strong>不能</strong>直接告诉你哪个 Build 过强——那是中心性与支配关系的活。</p>
+</div>
+
+<h2 id="c6">第 6 章　多层写法：论文怎么写，代码怎么写（包装层）</h2>
+
+<div class="box warn">
+<p style="margin:0"><strong>先说清楚本章的定位：这是包装层，不参与任何计算。</strong>本章内容不产生任何新数字，也不改变第 7 章以后任何一步的结果。它唯一的作用是让第 ① 步建的图能规范地称为"多层网络"，使论文题目站得住。<strong>时间紧可以整章跳过，只保留 6.3 那个选择。</strong>三层对象的划分见 2.0 的表 2-1。</p>
+</div>
+
+<h3>6.1 超邻接矩阵与邻接张量：同一件事的两种写法</h3>
+
+<p>把多层结构"拍平"成一个大矩阵，第 $(i,\alpha)$ 行第 $(j,\beta)$ 列表示"<em>$\alpha$</em> 层节点 $i$ → <em>$\beta$</em> 层节点 $j$"的边权：</p>
+
+<div class="formula">
+$$\mathcal{A}=\begin{pmatrix}
+A^{[C]} &amp; T^{C\to B} &amp; 0 &amp; \cdots\\[2pt]
+T^{B\to C} &amp; A^{[B]} &amp; E^{B\to 1} &amp; \cdots\\[2pt]
+0 &amp; E^{1\to B} &amp; 0 &amp; \ddots\\[2pt]
+\vdots &amp; \vdots &amp; \ddots &amp; \ddots
+\end{pmatrix}$$
+</div>
+
+<p>其中 $A^{[C]}$ 是元件层内部（协同 / 冲突），$A^{[B]}$ 是 Build 层内部（共享元件相似度），$T$ 是元件 ↔ Build 的归属边，$E$ 是 Build ↔ 遭遇切片的解算边。<strong>$E$ 必须双向</strong>：去程权取 $1/D$（越好打权越大），回程权取 $D$（威胁回流）；<strong>只建去程时结果与扁平图完全一样</strong>——这是实测踩过的坑。</p>
+
+<div class="box good">
+<p style="margin:0"><strong>论文写张量、代码写矩阵，不算偷换模型。</strong>邻接张量 $M^{i\alpha}_{j\beta}$（上标为"出"、下标为"入"）做一次 <em>matricization</em>（矩阵化，把 $(i,\alpha)$ 合并成一个复合行指标）就得到超邻接矩阵。论文里用张量记号显得规范（Kivel&auml; 等人 2014 年综述的标准写法），代码里用矩阵可以直接跑 PageRank 与谱分解。<strong>这句话建议原文写进论文，能堵掉一个常见质疑。</strong></p>
+</div>
+
+<h3>6.2 三类层间边，以及哪一类是必需的</h3>
+
+<p>层与层之间的边只有三类，<strong>其中只有前两类是必需的</strong>：</p>
+
+<ul>
+<li><strong>归属边</strong>（元件 ↔ Build，双向）<span class="tag r">必需</span>　没有它，元件层与 Build 层是两张孤立图，PageRank 跑出来的值没有跨层含义。</li>
+<li><strong>解算边</strong>（Build ↔ 遭遇，必须双向）<span class="tag r">必需</span>　去程 = TTK 结果，回程 = 威胁回流。</li>
+<li><strong>递进耦合边</strong>（只连相邻深度切片，权 $\omega$）<span class="tag r">实测无效</span>　把 $\omega$ 从 0.1 扫到 8.0（跨越 80 倍），PageRank 的<em>数值</em>确实在变（B1 从 7.50 降到 5.07），但<strong>七个 Build 的名次一个都没有变化</strong>，与扁平基准的 Kendall $\tau\equiv1.000$。<strong>别把它当创新点，做了会被问穿。</strong></li>
+</ul>
+
+<h3>6.3 一个必须回答的选择：副本 还是 独立节点</h3>
+
+<div class="box key">
+<p style="margin:0 0 8px"><strong>这是整章唯一会影响结论的选择，论文里必须写清楚</strong>，否则会被审稿人说"你这根本不是多层网络，只是把几张图拼起来"。</p>
+<p style="margin:0">自爆怪出现在第 1 层，也出现在第 3 层。这两个"自爆怪"是<strong>(A) 两个不同的节点</strong>（这是<em>分层图</em>，此时只能用 6.2 里那条实测无效的递进耦合），还是<strong>(B) 同一个实体的两个副本</strong>（这才是真正的 multiplex 网络）？</p>
+</div>
+
+<p><strong>选 (B)</strong>，三条理由：</p>
+
+<ol>
+<li><strong>语义正确</strong>：游戏里"自爆怪"就是一个 Config 条目，改它的数值会同时影响所有层——它本来就是同一个实体。</li>
+<li><strong>与调参动作一致</strong>：你调的是 Config 里的怪物 HP/ATK，改一个值影响所有层，这正对应"改副本的公共属性"。</li>
+<li><strong>能出新结论</strong>：副本语义下"跨层一致性"才有定义，可用来检出偏科 Build（实测 B7 的 versatility = 0.593，$\tau(D_1,\text{Boss})=0.714&lt;0.8$）。</li>
+</ol>
+
+<div class="box warn">
+<p style="margin:0"><strong>但要清醒</strong>：跨层一致性本质上是 $\mathrm{CV}_{lat}$ 的"策划语言版"——它衡量同一只怪在各层的表现是否一致，与 8.2 里"竖读一列"在信息上高度重叠（逐条裁决见 8.9）。<strong>把它当一个诊断视角写进论文，不要包装成新指标。</strong></p>
+</div>
+
+<h2 id="c7">第 7 章　两个矩阵：结构矩阵 A 与难度矩阵 M</h2>
+
+<div class="box key">
+<p style="margin:0"><strong>核心澄清：整个方法里只有两个矩阵。混淆它们是最常见的卡点。</strong><br>
+$A$ 是<em>输入</em>（描述关系，喂给图算法，<strong>不是被优化的对象</strong>）；$M$ 是<em>输出</em>（描述结果，<strong>是被优化的对象</strong>）。</p>
+</div>
+
+<h3>7.1 结构矩阵 $A$：谁跟谁有关</h3>
+
+<ul>
+<li><strong>元素含义</strong>：$A_{ij}=$ 节点 $i$ 到节点 $j$ 的<strong>边权</strong>，无边则为 0。</li>
+<li><strong>形态</strong>：单层就是普通邻接矩阵；多层就是第 6.1 节的超邻接矩阵。</li>
+<li><strong>喂给谁</strong>：PageRank、加权度中心性、代数连通度 $\lambda_2$、模块度。</li>
+</ul>
+
+<p>三个从 $A$ 能直接读出来的诊断量：</p>
+
+<table>
+<tr><th style="width:22%">量</th><th style="width:38%">怎么算</th><th>能诊断什么</th></tr>
+<tr><td><strong>加权度 / PageRank</strong></td><td>标准算法，权重即边权</td><td><strong>枢纽数值项</strong>：哪个元件牵一发动全身（实测：轻甲 2.110 最高）</td></tr>
+<tr><td><strong>代数连通度 $\lambda_2$</strong></td><td>图拉普拉斯矩阵的第二小特征值</td><td><strong>图是否连通</strong>：若 $\lambda_2\approx0$，说明存在孤立子系统（某件装备与谁都不搭）。实测 $\lambda_2=3.7545$，连通良好</td></tr>
+<tr><td><strong>行为向量相似度</strong></td><td>两个 Build 在 $M$ 中对应行的余弦相似度</td><td><strong>冗余选项</strong>：实测 B1/B4/B6 相似度 = 1.00000，即三把武器只有数值差、无机制差</td></tr>
+</table>
+<div class="cap">表 7-1　从 $A$ 读出的诊断量</div>
+
+<h3>7.2 TTK 解析模型：从元件到难度</h3>
+
+<p>这是 $\theta\to M$ 的<strong>引擎</strong>——注意，<strong>不是 $A\to M$</strong>。$M$ 的每一个元素都由本节的公式直接算出，全程不经过结构矩阵 $A$（$A$ 走的是另一条诊断链，见 7.4）。完整的推导链（MVS 版本）：</p>
+
+<div class="formula">
+$$\mathrm{DPS}_{玩家} = \underbrace{ATK \times APS}_{\text{基础输出}} \times \underbrace{(1+\Delta SPD)}_{\text{机动加成}} \times \underbrace{\Gamma}_{\text{协同}} \times \underbrace{cd_{mult}}_{\text{冷却}} \times \underbrace{\eta}_{\text{场景适配}}$$
+</div>
+
+<div class="formula">
+$$HP^{eff}_{玩家} = (HP_{base}+\Delta HP)\times\left(1+\frac{armor\times\mu}{10}\right),\qquad dodge = \lambda_{dodge}\times mob\times\big(\kappa_{mob}+(1-\kappa_{mob})(1-\mu)\big)$$
+</div>
+
+<div class="formula">
+$$T_{kill}=\frac{HP_{怪}}{\mathrm{DPS}_{玩家}},\qquad T_{surv}=\frac{HP^{eff}_{玩家}}{\mathrm{DPS}_{怪}\times(1-dodge)},\qquad D=\frac{T_{kill}}{T_{surv}}$$
+</div>
+
+<p>符号说明：$ATK$ 攻击、$APS$ 每秒攻击次数、$\Gamma$ 三件装备协同权的几何平均、$cd_{mult}=1+\kappa(\frac{1}{1-CDR}-1)$、$\eta$ 场景适配系数（武器射程与场景特征尺度 $R^\*$ 的匹配度）、$\mu$ 场景密度、$\lambda_{dodge}$ 闪避系数。</p>
+
+<div class="box">
+<p style="margin:0"><strong>四个必须主动交代的简化（写进"局限性"）</strong>：① 不含走位与散布（Pistol 移动散布 ×3 未建模）；② 假设多只怪同步输出（$k$ 只怪的 DPS 直接乘 $k$）；③ Boss 分阶段需单独建模（阶段二移速 ×1.3、技能间隔 2 秒）；④ 药水时序（持续 60 秒覆盖几场战斗）算不细。<br>
+<strong>处理方式</strong>：<em>解析模型用于搜索，BOT 仿真用于验证</em>，两者做相关性检验（见 10.2 的 E5）。</p>
+</div>
+
+<h3>7.3 难度矩阵 $M$：难度是多少</h3>
+
+<div class="formula">
+$$M_{i,l} = D(\text{Build}_i,\ \text{层 }l),\qquad M\in\mathbb{R}^{n\times L}$$
+</div>
+
+<ul>
+<li><strong>行</strong>：一个 Build 的整条难度曲线</li>
+<li><strong>列</strong>：某一层上所有 Build 的横向对比</li>
+<li><strong>元素</strong>：无量纲难度值，落在 $[0.3,0.95]$ 为理想</li>
+</ul>
+
+<p>你的真实规模：$n$ 个合法 Build × 4 个遭遇切片。MVS 规模：$6\times 2=12$ 格。</p>
+
+<h3>7.4 映射链：把两个矩阵和优化连起来</h3>
+
+<div class="box key">
+<p style="margin:0"><strong>$M$ 的计算不经过 $A$</strong>：<code>combat()</code> 直接读元件字典与 $\theta$ 算出 $D$，$A$ 分支的 PageRank 结果不进入 $J$。用 <code>inspect.getsource</code> 检查 <code>combat()</code>、<code>difficulty_matrix()</code>、<code>objective()</code> 三个函数即可确认——<code>build_graph</code>、<code>pagerank</code>、边表 <code>E</code> 一处都没有出现。</p>
+</div>
+
+<p>正确写法是<strong>两条并行的链</strong>，而不是一条串起来的链：</p>
+
+<div class="formula">
+$$\underbrace{\theta \ \xrightarrow{\ \text{TTK 解算}\ }\ M(\theta) \ \xrightarrow{\ \text{指标}\ }\ J(\theta) \ \xrightarrow{\ \text{搜索}\ }\ \theta^\ast}_{\text{主链：负责优化}}$$
+$$\underbrace{\theta \ \xrightarrow{\ \text{建图}\ }\ A(\beta) \ \xrightarrow{\ \text{PageRank / 中心性 / }\lambda_2\ }\ \text{元件级归因}}_{\text{诊断链：负责解释，不进入 } J}$$
+</div>
+
+<p><strong>$A$ 与 $M$ 是兄弟，不是父子。</strong>它们是同一个 $\theta$ 的两个平行投影，谁也不从谁算出来。二者唯一的联系是<em>共享两个边权函数</em>：</p>
+
+<table>
+<tr><th style="width:34%">共享的权函数</th><th style="width:33%">在 $A$ 里的角色</th><th>在 $M$ 里的角色</th></tr>
+<tr><td>$\texttt{syn\_weight}=1+\alpha\big(1-\cos(d_u,d_v)\big)$</td><td>元件–元件<strong>协同边权</strong></td><td>经 <code>gamma()</code> 取几何平均后乘进 DPS</td></tr>
+<tr><td>$\texttt{eta\_range}=1+\beta\left(2e^{-\frac{(R-R^\*)^2}{2\sigma_R^2}}-1\right)$</td><td>Build–场景<strong>适配边权</strong></td><td>直接乘进 DPS</td></tr>
+</table>
+<div class="cap">$A$ 与 $M$ 共享的两个权函数——<strong>共享的是函数，不是矩阵</strong></div>
+
+<p>所以严谨的说法是：<strong>共享的是权函数，不是矩阵本身</strong>。论文里建议这样表述：</p>
+
+<div class="box key">
+<p style="margin:0">$A$ 与 $M$ 是同一参数向量 $\theta$ 的两个投影，共享同一组边权函数。$M$ 进入目标函数 $J$、用于优化；$A$ 上的中心性指标用于对 $M$ 中的异常做<strong>元件级归因</strong>。二者分工不同，不构成计算上的依赖关系。</p>
+</div>
+
+<p><strong>还有一处必须改口：</strong><code>build_graph(beta)</code> 只接受 <code>beta</code> 一个参数，$\theta$ 的另外三个分量（法杖 ATK、板甲 DEF、怪物缩放）对图<em>没有任何影响</em>。所以 $A(\theta)$ 必须写成 $A(\beta)$——笼统地说"结构矩阵随参数变化"是不准确的，它只随场景强度参数变化。</p>
+
+<p>这条链还澄清了一个常见困惑：<strong>被优化的从来不是矩阵 $M$ 的元素，而是参数向量 $\theta$</strong>（怪物 HP、ATK、护甲常数 $K$、精英缩放等）。$M$ 只是 $\theta$ 的函数值，用来算指标 $J$。</p>
+
+<h3>7.5 完整手算算例（用你开题报告的真实数值）</h3>
+
+<p><strong>这一节是答辩时的"可复核性"证据，务必亲手算一遍。</strong></p>
+
+<h4>算例 1：护甲公式的硬伤</h4>
+
+<p>开题报告 5.1 给的防御公式是<strong>固定减法</strong>：$dmg_{实际}=\max(1,\ 伤害-0.5\times 护甲)$。玩家穿上<strong>战术护甲（护甲 50）</strong>后，减伤量为 $0.5\times50=25$ 点。把 8 种怪的攻击力代进去：</p>
+
+<table>
+<tr><th style="width:20%">怪物</th><th style="width:12%">攻击</th><th style="width:20%">穿战术护甲后<br>实际伤害</th><th>说明</th></tr>
+<tr><td>碰撞怪 普通</td><td class="num">8</td><td class="num">$\max(1,8-25)=1$</td><td rowspan="7">8 种怪里有 <strong>7 种只造成 1 点伤害</strong>——护甲 50 几乎免疫了全部普通怪与大部分精英怪</td></tr>
+<tr><td>碰撞怪 精英</td><td class="num">15</td><td class="num">$\max(1,15-25)=1$</td></tr>
+<tr><td>冲锋怪 普通</td><td class="num">12</td><td class="num">$\max(1,12-25)=1$</td></tr>
+<tr><td>冲锋怪 精英</td><td class="num">25</td><td class="num">$\max(1,25-25)=1$</td></tr>
+<tr><td>自爆怪 普通</td><td class="num">20</td><td class="num">$\max(1,20-25)=1$</td></tr>
+<tr><td>细胞怪 普通</td><td class="num">8</td><td class="num">$\max(1,8-25)=1$</td></tr>
+<tr><td>细胞怪 精英</td><td class="num">12</td><td class="num">$\max(1,12-25)=1$</td></tr>
+<tr><td><strong>自爆怪 精英</strong></td><td class="num">40</td><td class="num">$\max(1,40-25)=\mathbf{15}$</td><td><strong>唯一能造成实质伤害的怪</strong>——这就是"唯一反制点"</td></tr>
+</table>
+<div class="cap">表 7-2　固定减法护甲下的实际伤害（护甲 50）</div>
+
+<div class="box warn">
+<p style="margin:0"><strong>这就是实测诊断出的结果</strong>：B3（近战 + 战术护甲 50）在 <strong>8/8 项上全部最优</strong>；唯一能威胁它的只有自爆怪精英（$D=0.172$，其余 ≤ 0.025）。<strong>结论：不是某个数值太大，是公式结构有问题。</strong></p>
+</div>
+
+<h4>算例 2：改成百分比减伤之后</h4>
+
+<p>把公式换成常见的百分比减伤形式：</p>
+
+<div class="formula">
+$$dmg_{实际} = 伤害 \times \left(1-\frac{armor}{armor+K}\right),\qquad K=50$$
+</div>
+
+<p>护甲 50 时减伤率 $=50/(50+50)=50\%$。同样的 8 种怪：</p>
+
+<table>
+<tr><th style="width:20%">怪物</th><th style="width:14%">攻击</th><th style="width:20%">固定减法<br><span class="small">（改前）</span></th><th style="width:20%">百分比减伤<br><span class="small">（改后）</span></th><th>改善</th></tr>
+<tr><td>碰撞怪 普通</td><td class="num">8</td><td class="num">1</td><td class="num">4.0</td><td rowspan="8">伤害重新有了<strong>梯度</strong>：从 4.0 到 20.0，玩家能感知到"这只怪更疼"。<br>这就是 $<em>\sigma_{traj}$ 从 0.3421 降到 0.1046</em>$ 的机制原因</td></tr>
+<tr><td>碰撞怪 精英</td><td class="num">15</td><td class="num">1</td><td class="num">7.5</td></tr>
+<tr><td>冲锋怪 普通</td><td class="num">12</td><td class="num">1</td><td class="num">6.0</td></tr>
+<tr><td>冲锋怪 精英</td><td class="num">25</td><td class="num">1</td><td class="num">12.5</td></tr>
+<tr><td>自爆怪 普通</td><td class="num">20</td><td class="num">1</td><td class="num">10.0</td></tr>
+<tr><td>自爆怪 精英</td><td class="num">40</td><td class="num">15</td><td class="num">20.0</td></tr>
+<tr><td>细胞怪 普通</td><td class="num">8</td><td class="num">1</td><td class="num">4.0</td></tr>
+<tr><td>细胞怪 精英</td><td class="num">12</td><td class="num">1</td><td class="num">6.0</td></tr>
+</table>
+<div class="cap">表 7-3　两种护甲公式对比（护甲 50，$K=50$）</div>
+
+<h4>算例 3：精英缩放不统一</h4>
+
+<table>
+<tr><th style="width:16%">怪物</th><th style="width:14%">HP 倍率</th><th style="width:14%">ATK 倍率</th><th style="width:14%">DPS 倍率</th><th>问题</th></tr>
+<tr><td>碰撞怪</td><td class="num">30→90 = <strong>3.00</strong></td><td class="num">8→15 = 1.875</td><td class="num">2.34</td><td rowspan="4">HP 倍率 2.75~3.00，ATK 倍率 1.50~2.08，<strong>四种怪的精英化强度不一致</strong>。<br>建议统一为 <strong>×3 HP / ×2 ATK</strong>，冷却统一 1.0→0.8</td></tr>
+<tr><td>冲锋怪</td><td class="num">35→100 = 2.86</td><td class="num">12→25 = 2.083</td><td class="num">2.60</td></tr>
+<tr><td>自爆怪</td><td class="num">20→55 = 2.75</td><td class="num">20→40 = <strong>2.00</strong></td><td class="num">2.50</td></tr>
+<tr><td>细胞怪</td><td class="num">40→120 = <strong>3.00</strong></td><td class="num">8→12 = <strong>1.50</strong></td><td class="num">1.88</td></tr>
+</table>
+<div class="cap">表 7-4　精英缩放倍率（由开题报告 5.3 计算）</div>
+
+<p>注意：细胞怪精英的 DPS 倍率只有 1.88，而冲锋怪精英是 2.60。<strong>同为精英，强度提升差 38%</strong>——这正是 $\sigma_{traj}$ 会捕捉到的不一致。</p>
+
+<h3>7.6 三个常见误区</h3>
+
+<div class="box warn">
+<p><strong>误区 1：把 $M$ 当成邻接矩阵喂给图算法。</strong>$M$ 是<em>结果</em>（难度值），不是<em>关系</em>（边权）。真正喂给 PageRank 的是 $A$。$M$ 只用来算指标。</p>
+<p><strong>误区 2：以为优化的是 $M$ 的元素。</strong>$M$ 是 $\theta$ 的函数，你只能改 $\theta$（Config 里的数值），不能"直接把某个格子改小"。</p>
+<p style="margin-bottom:0"><strong>误区 3：以为两个矩阵越多越好。</strong>再加第三个矩阵（比如"收益矩阵"）会让论文失去焦点，且答辩时你讲不清。<strong>两个足够。</strong></p>
+</div>
+
+<h2 id="c8">第 8 章　评价指标体系：五个指标与阈值怎么定</h2>
+
+<h3>8.1 为什么一个指标不够（先把动机讲清楚）</h3>
+
+<p>设想三个 Build 在三层地牢中的难度如下：</p>
+
+<table>
+<tr><th style="width:14%">Build</th><th style="width:14%">第 1 层</th><th style="width:14%">第 2 层</th><th style="width:14%">第 3 层</th><th>总增幅</th></tr>
+<tr><td>A</td><td class="num">1.00</td><td class="num">1.50</td><td class="num">2.25</td><td class="num">× 2.25</td></tr>
+<tr><td>B</td><td class="num">1.00</td><td class="num">1.20</td><td class="num">1.44</td><td class="num">× 1.44</td></tr>
+<tr><td>C</td><td class="num">1.00</td><td class="num">1.80</td><td class="num">3.24</td><td class="num">× 3.24</td></tr>
+</table>
+<div class="cap">表 8-1　第 1 层 $\mathrm{CV}=0$（水平完全平衡），但到第 3 层 C 是 B 的 2.25 倍</div>
+
+<p>第 1 层三者难度完全相等，<strong>水平指标完美</strong>（CV = 0）。但玩家玩 B 会觉得"越玩越轻松"，玩 C 会觉得"第 3 层突然崩了"。<strong>这就是"可控难度曲线"真正要管、而水平 CV 管不了的东西。</strong></p>
+
+<div class="box key">
+<p style="margin:0">因此指标必须分两层：<strong>水平一致性</strong>（同层内是否公平）与<strong>曲线一致性</strong>（跨层增速是否同步）。<strong>后者是本文的创新点。</strong></p>
+</div>
+
+<h3>8.2 五个指标（各有分工，不要堆砌）</h3>
+
+<table>
+<tr><th style="width:13%">指标</th><th style="width:31%">定义</th><th style="width:19%">从 $M$ 的哪部分读</th><th style="width:17%">回答什么问题</th><th>目标</th></tr>
+<tr>
+<td>$\mathrm{CV}_{lat}$<br><span class="tag g">已实现</span></td>
+<td>同一层内各 Build 难度的变异系数 $\sigma/\mu$，再对层取均值</td>
+<td><strong>竖读一列</strong>（第 $l$ 列内求离散）</td>
+<td><strong>此刻是否公平</strong></td>
+<td>&lt; 0.20</td>
+</tr>
+<tr>
+<td><strong>$\sigma_{traj}$</strong><br><span class="tag">创新</span><span class="tag r">口径不一</span></td>
+<td>各 Build 逐层<em>对数增幅</em>的标准差（定义见 8.3）</td>
+<td><strong>相邻列差分</strong> $\Delta_{i,l}=\ln\frac{M_{i,l+1}}{M_{i,l}}$，再跨行求 std</td>
+<td><strong>成长是否同步</strong></td>
+<td><strong>&lt; 0.20</strong></td>
+</tr>
+<tr>
+<td>$R_{traj}$<br><span class="tag r">仅 bipartite</span></td>
+<td>$R=\max_i G_i/\min_i G_i$，其中 $G_i=M_{i,L}/M_{i,1}$ 是第 $i$ 个 Build 的总增幅</td>
+<td><strong>首列与末列</strong>之比</td>
+<td>差距有多大（直观版）</td>
+<td>&lt; 1.8</td>
+</tr>
+<tr>
+<td>$\tau$（Kendall）<br><span class="tag r">仅 multiplex</span></td>
+<td>相邻两层 Build 难度<em>排名</em>的等级相关</td>
+<td><strong>逐列排名序列</strong>的相邻比较</td>
+<td>是发散还是反转</td>
+<td>≥ 0.8<br><span class="small">需至少 3 层</span></td>
+</tr>
+<tr>
+<td>$F$（ANOVA）<br><span class="tag r">未实现</span></td>
+<td>$F=MS_{between}/MS_{within}$，每个格子 BOT 跑 $k$ 局</td>
+<td><strong>每个格子</strong>重复采样的组间/组内方差</td>
+<td>是不是只是噪声</td>
+<td>显著<br><span class="small">需先有 BOT</span></td>
+</tr>
+</table>
+<div class="cap">表 8-2　五个指标的构造、读取方式与目标值</div>
+
+<div class="box key">
+<p style="margin:0 0 8px"><strong>回答"这些指标从哪个矩阵来"：五个指标全部读自 $M$，一个都不读自 $A$。</strong></p>
+<p style="margin:0 0 8px">它们只是<strong>读同一个矩阵的五种方式</strong>：竖读一列得 $\mathrm{CV}_{lat}$，横读一行得 $R_{traj}$ 与单调性，相邻列差分得 $\sigma_{traj}$，逐列排名比较得 $\tau$，对格子重复采样得 $F$。<strong>指标不是五个独立的发明，是同一个 $M$ 的五种投影。</strong></p>
+<p style="margin:0">而 $A$ 给出的是<strong>另一类东西</strong>：元件枢纽度（PageRank / 加权度）、代数连通度 $\lambda_2$、支配 / 冗余 / 偏科（见 7.1 表 7-1）。这些回答的是"<em>为什么</em>不平衡"，不是"平不平衡"。<strong>第 8 章的五指标负责打分，7.1 节的诊断量负责归因——这就是两个矩阵的分工。</strong></p>
+</div>
+
+<div class="box warn">
+<p style="margin:0 0 8px"><strong>⚠ 实现现状：五个指标里，MVS 脚本只真正实现了两个。</strong></p>
+<ul style="margin:0">
+<li><code>minimal_balance_model.py</code>：只有 <code>cv_mean</code>（即 $\mathrm{CV}_{lat}$）与 <code>curve_cv</code>（轨迹离散度，口径与正文 $\sigma_{traj}$ 不一致，见 8.6）。</li>
+<li><code>R_{traj}</code>：<strong>只在</strong> <code>bipartite_diagnosis.py</code> 第 143 行出现（且仅作为打印项，未进目标函数）。</li>
+<li><code>\tau</code>：<strong>只在</strong> <code>multiplex_balance.py</code> 第 181/243/292 行有实现。</li>
+<li><code>F</code>（ANOVA）：<strong>三个脚本一个都没有实现</strong>。它需要 BOT 重复对局数据，而 BOT 环节尚未做。</li>
+</ul>
+<p style="margin:8px 0 0"><strong>写论文时的处理</strong>：要么把这五个指标在同一套脚本里补齐（推荐，工作量不大），要么在论文中明确写"$\tau$ 与 $F$ 仅在数据集 B 上报告"，并说明数据集 A 只有两层、无法计算跨层 $\tau$。<strong>不能照抄表格假装五个都算过。</strong></p>
+</div>
+
+<h3>8.3 $\sigma_{traj}$ 的构造四步（论文里按这个顺序写）</h3>
+
+<ol>
+<li><strong>Step 0</strong>：建立难度矩阵 $M_{i,l}=D(\text{Build}_i,\text{层 }l)$。</li>
+<li><strong>Step 1（关键）</strong>：取<strong>对数增幅</strong>
+<div class="formula" style="margin:8px 0">$$\Delta_{i,l}=\ln\frac{M_{i,l+1}}{M_{i,l}}=\ln M_{i,l+1}-\ln M_{i,l}$$</div>
+用对数有两个理由：<em>对称</em>（×1.5 与 ×0.67 惩罚相同）、<em>可加</em>（$\Delta_{1\to3}=\Delta_{1\to2}+\Delta_{2\to3}$，因此能做方差分解）。</li>
+<li><strong>Step 2</strong>：每层内跨 Build 求标准差，再对层取均方：
+<div class="formula" style="margin:8px 0">$$\sigma_{traj}=\sqrt{\frac{1}{L-1}\sum_{l=1}^{L-1}\ \frac{1}{n-1}\sum_{i=1}^{n}\left(\Delta_{i,l}-\bar\Delta_{\cdot,l}\right)^2}$$</div>
+<strong>用标准差而不是 CV</strong>——因为 $\bar\Delta$ 可能接近 0（难度几乎不涨的设计），除以它会爆炸。</li>
+<li><strong>Step 3–4</strong>：辅助指标 $R_{traj}$（给答辩用的一句话结论）与 $\tau$（交叉检测）。</li>
+</ol>
+
+<div class="box good">
+<p style="margin:0"><strong>$\sigma_{traj}$ 的解释性极好，这是它能上论文的原因</strong>：它的单位是"对数难度"。$\sigma_{traj}=0.12$ 意味着各 Build 每层难度增长倍数相差约 $e^{0.12}\approx1.13$ 倍（13%）。<strong>可以直接翻译成玩家体感</strong>——这句话答辩时很有用。</p>
+</div>
+
+<h4>手算例子（用表 8-1 的三个 Build）</h4>
+
+<pre>Δ_·,1 = ln1.5, ln1.2, ln1.8 = 0.405, 0.182, 0.588   均值 0.392  标准差 0.204
+Δ_·,2 = 同上（本例等比）                              标准差 0.204
+σ_traj = 0.204  →  增速相差约 e^0.204 = 1.23 倍（23%） →  超标（>0.10）
+G = 2.25, 1.44, 3.24  →  R_traj = 3.24/1.44 = 2.25      →  严重超标（>1.5）
+排名 [1,2,3] vs [1,2,3]  →  τ = 1                      →  无交叉（稳定发散）</pre>
+
+<p><strong>结论一句话</strong>：不是某个 Build 太强，是三者的<em>成长斜率</em>不一致。这两种病治法完全不同，$\tau$ 就是用来区分的——<strong>$\tau&lt;0.8$ 是"前期强后期废"的机制病，必须改机制；$\tau\approx1$ 是数值病，调数值即可。</strong></p>
+
+<h3>8.4 阈值怎么定：三重锚点</h3>
+
+<p>"凭什么说 $\sigma_{traj}&lt;0.10$ 就算合格？"——这是答辩必问的第一问题。标准答案是<strong>三重锚点互相印证</strong>：</p>
+
+<table>
+<tr><th style="width:18%">锚点</th><th style="width:38%">做法</th><th>抗什么质疑</th></tr>
+<tr>
+<td><strong>① 绝对锚点</strong></td>
+<td>由对数单位直接解释：$\sigma_{traj}=0.20$ 意味着各 Build 增速相差 $e^{0.20}\approx22\%$</td>
+<td>"你这个阈值哪来的？"</td>
+</tr>
+<tr>
+<td><strong>② 随机基线锚点</strong><span class="tag g">最推荐</span></td>
+<td>对 $\theta$ 各分量独立施加 $U(0.8,1.2)$ 乘性扰动，重复 1000 次，得指标的经验分布</td>
+<td>"凭什么说你的方案算平衡？"<br><strong>这是最有说服力的一条</strong></td>
+</tr>
+<tr>
+<td><strong>③ 显著性锚点</strong></td>
+<td>每个格子 BOT 跑 $k$ 局（如 200 局），做单因素方差分析，$F&gt;F_{crit}$ 才算真失衡</td>
+<td>"这只是伤害随机数造成的吧？"<br><span class="tag r">需先有 BOT，目前未做</span></td>
+</tr>
+</table>
+<div class="cap">表 8-3　阈值的三重定标方法</div>
+
+<h4>② 的实测结果（<strong>这一版才是真跑出来的，请直接引用</strong>）</h4>
+
+<p>对 $\theta=(\beta,\ ATK_{法杖},\ DEF_{板甲},\ 缩放_{S2})=(0.30,\ 7.0,\ 6.0,\ 1.00)$ 的四个分量独立施加 $U(0.8,1.2)$ 乘性扰动，重复 <strong>1000 次</strong>（<code>random.seed(42)</code>，可复现），$\sigma_{traj}$ 按正文 8.3 定义计算：</p>
+
+<table>
+<tr><th style="width:18%">指标</th><th style="width:14%">最优（min）</th><th style="width:14%">P10</th><th style="width:14%">P25</th><th style="width:14%">中位</th><th>P0 实测值</th></tr>
+<tr><td>$\mathrm{CV}_{lat}$</td><td class="num">0.2107</td><td class="num">0.2328</td><td class="num">0.2457</td><td class="num">0.2624</td><td class="num">0.2539</td></tr>
+<tr><td>$\sigma_{traj}$</td><td class="num">0.4365</td><td class="num">0.4655</td><td class="num">0.4986</td><td class="num">0.5538</td><td class="num">0.5500</td></tr>
+<tr><td>$R_{traj}$</td><td class="num">3.0033</td><td class="num">3.2672</td><td class="num">3.4890</td><td class="num">3.9053</td><td class="num">3.8873</td></tr>
+<tr><td>最大极差倍数</td><td class="num">2.9467</td><td class="num">3.4530</td><td class="num">3.7224</td><td class="num">4.1135</td><td class="num">4.0873</td></tr>
+</table>
+<div class="cap">表 8-3b　随机基线分布（1000 次扰动，可复现）</div>
+
+<div class="box key">
+<p style="margin:0"><strong>这张表怎么读</strong>：它给出"不调参时指标会落在什么范围"。<strong>最小值那一列是随手乱调 1000 次能达到的最好成绩</strong>——任何调参方案都必须显著优于它，否则与不调参无异。以 $\sigma_{traj}$ 为例：随机最优 0.4365、中位 0.5538，而 $\theta^\ast$ 达到 <strong>0.1936</strong>，不到随机最优值的一半。</p>
+</div>
+
+<h4>阈值表（每条依据都能复述）</h4>
+
+<table>
+<tr><th style="width:16%">指标</th><th style="width:16%">优</th><th style="width:18%">可接受</th><th style="width:18%">必须修</th><th>依据</th></tr>
+<tr>
+<td>$\mathrm{CV}_{lat}$</td><td class="num">&lt; 0.20</td><td class="num">0.20 – 0.25</td><td class="num">&gt; 0.25</td>
+<td>绝对锚点（20% 离散度）；且必须显著低于基线最优 0.2107</td></tr>
+<tr>
+<td><strong>$\sigma_{traj}$</strong></td><td class="num"><strong>&lt; 0.20</strong></td><td class="num">0.20 – 0.30</td><td class="num">&gt; 0.30</td>
+<td>绝对锚点：$e^{0.20}\approx22\%$ 增速差；基线最优 0.4365 为硬门槛</td></tr>
+<tr>
+<td>$R_{traj}$</td><td class="num"><strong>&lt; 1.8</strong></td><td class="num">1.8 – 2.5</td><td class="num">&gt; 2.5</td>
+<td>基线最优 3.0033 为硬门槛；实测 $\theta^\ast=1.7172$ 刚好入"优"</td></tr>
+<tr>
+<td>$\tau$</td><td class="num">≥ 0.8</td><td class="num">0.6 – 0.8</td><td class="num">&lt; 0.6</td><td>绝对锚点：等级相关的惯例门槛</td></tr>
+<tr>
+<td>$F$（ANOVA）</td><td colspan="3" class="num">$F &gt; F_{crit}(0.05)$ 且效应量 $\eta^2&gt;0.06$</td><td>需先有 BOT 数据</td></tr>
+</table>
+<div class="cap">表 8-3c　五项指标的阈值与依据</div>
+
+<h4>基线 B：$\theta^\ast$ 邻域的局部敏感性</h4>
+
+<p>再以 $\theta^\ast$ 为中心做一次 ±20% 扰动，问的是另一个问题：<em>这个解有多稳？换个人重调会不会差很多？</em></p>
+
+<table>
+<tr><th style="width:18%">指标</th><th style="width:14%">$\theta^\ast$</th><th style="width:14%">邻域最优</th><th style="width:14%">邻域 P25</th><th style="width:14%">邻域中位</th><th>读法</th></tr>
+<tr><td>$J$</td><td class="num">0.2245</td><td class="num">0.2097</td><td class="num">0.2447</td><td class="num">0.4118</td><td>明显优于中位，落在 P10~P25 之间</td></tr>
+<tr><td>$\mathrm{CV}_{lat}$</td><td class="num">0.1146</td><td class="num">0.1054</td><td class="num">0.1167</td><td class="num">0.1231</td><td>略优于中位</td></tr>
+<tr><td>$\sigma_{traj}$</td><td class="num">0.1936</td><td class="num">0.1588</td><td class="num">0.1797</td><td class="num">0.1946</td><td>略优于中位</td></tr>
+<tr><td>$R_{traj}$</td><td class="num">1.7172</td><td class="num">1.5705</td><td class="num">1.6599</td><td class="num">1.7168</td><td>几乎等于中位</td></tr>
+</table>
+<div class="cap">表 8-3d　$\theta^\ast$ 邻域的局部扰动分布（1000 次，seed=42）</div>
+
+<div class="box key">
+<p style="margin:0 0 8px"><strong>阈值的论证逻辑（答辩时照这个顺序说）：</strong></p>
+<ol style="margin:0">
+<li><strong>绝对锚点</strong>：指标单位是对数难度，$\sigma_{traj}=0.20$ 可直译为"各 Build 每层增速相差 22%"，这是玩家能明确感知的界限。</li>
+<li><strong>硬门槛</strong>：以 $P_0$ 为中心随机扰动 1000 次，$\sigma_{traj}$ 的最好成绩是 0.4365。<strong>任何方案都必须显著低于它</strong>，否则与"随手乱调"无异；$\theta^\ast$ 达到 0.1936，不到其一半。</li>
+<li><strong>局部稳健性</strong>：以 $\theta^\ast$ 为中心扰动时，综合目标 $J$ 的中位为 0.4118，而 $\theta^\ast=0.2245$——<strong>调参确实有效</strong>；但单项平衡指标只是略优于邻域中位，说明 $\theta^\ast$ 位于<em>平坦盆地</em>而非尖峰。</li>
+</ol>
+<p style="margin:8px 0 0"><strong>第 3 条的分寸要拿捏</strong>：结论是"解很稳健，$\pm20\%$ 的参数误差不会毁掉结果"，<em>不是</em>"$\theta^\ast$ 显著优于所有邻域解"。后者是假的——邻域最优值（$\sigma_{traj}=0.1588$）就比 $\theta^\ast$ 更好。论文里按前者写。</p>
+</div>
+
+<h3>8.5 出问题时怎么定位：方差分解</h3>
+
+<p>指标超标后，要能指认"是哪一层、哪个 Build、哪个数值"的锅。三步：</p>
+
+<ol>
+<li><strong>定位到层</strong>：$\sigma_l=\mathrm{std}_i(\Delta_{i,l})$，最大的那层就是崩掉的层。</li>
+<li><strong>定位到 Build</strong>：贡献度 $c_i=(\Delta_i-\bar\Delta)^2\big/\sum_j(\Delta_j-\bar\Delta)^2$，最大的是主因。</li>
+<li><strong>定位到数值</strong>：看该 Build 在该层的 $M$ 偏高还是偏低，回 Config 找对应项。<em>大概率是护甲公式或精英缩放（见 7.5 算例 3）。</em></li>
+</ol>
+
+<h3>8.5b 不合格怎么调：症状 → 参数 → 方向的对照表</h3>
+
+<p>定位到"哪一项不合格"之后，下一步是"动哪个参数、往哪边动"。<strong>这一步不能靠猜</strong>——下面两张表是实测跑出来的：以 $\theta^\ast=(\beta=0.10,\ s=0.35,\ ATK_{法杖}=12.0,\ DEF_{板甲}=3.0,\ 缩放_{S2}=1.00)$ 为中心，每个参数单独 ×0.80 与 ×1.20，其余固定，记录三个平衡指标的变化（脚本 <code>sensitivity_scan.py</code>，可复现）。</p>
+
+<h4>表 A：每个参数能治什么病</h4>
+
+<table>
+<tr><th style="width:22%">参数</th><th style="width:13%">$\mathrm{CV}_{lat}$ 弹性</th><th style="width:13%">$\sigma_{traj}$ 弹性</th><th style="width:13%">$R_{traj}$ 弹性</th><th style="width:13%">绝对难度</th><th>主作用与方向</th></tr>
+<tr>
+<td>$\beta$（场景机制强度）</td><td class="num">0.438</td><td class="num"><strong>0.767</strong></td><td class="num">0.351</td><td class="num">—</td>
+<td><strong>治曲线不齐的主力</strong>。调大则三项全恶化（$\sigma_{traj}$：0.1661 → 0.1936 → 0.2233，单调），<strong>调小即改善</strong></td>
+</tr>
+<tr>
+<td>$ATK_{法杖}$</td><td class="num"><strong>1.250</strong></td><td class="num">0.000</td><td class="num">0.000</td><td class="num">↓</td>
+<td><strong>只治同层不公平</strong>，对曲线两项<strong>完全无效</strong>。且双向都恶化（0.1399 / 0.1433 均 &gt; 基线 0.1146），说明 $12.0$ 正落在谷底</td>
+</tr>
+<tr>
+<td>$DEF_{板甲}$</td><td class="num">0.160</td><td class="num">0.206</td><td class="num">0.132</td><td class="num">↓</td>
+<td><strong>微调旋钮</strong>，三项都动但幅度小。用于最后一步精修</td>
+</tr>
+<tr>
+<td>$s$（怪物血量全局缩放）</td><td class="num">0.000</td><td class="num">0.000</td><td class="num">0.000</td><td class="num"><strong>↑↑</strong></td>
+<td><strong>只管绝对难度，三个平衡指标小数点后六位完全不动</strong>（命题 1 的实测复现）。难度高就调小、低就调大</td>
+</tr>
+<tr>
+<td>$缩放_{S2}$</td><td class="num">0.000</td><td class="num">0.000</td><td class="num">0.000</td><td class="num">↑（仅 S2）</td>
+<td><strong>只管层间递增比</strong>。三个平衡指标全无效，但 $J$ 从 0.2245 暴涨到 3.92 / 1.24——说明它是<strong>硬约束</strong>而非平衡旋钮</td>
+</tr>
+</table>
+<div class="cap">表 8-3e　单参数敏感度（弹性 $=|\Delta$指标$/$指标$|\div 20\%$；$&lt;0.05$ 视为对该指标无效）</div>
+
+<h4>表 B：症状 → 处方</h4>
+
+<table>
+<tr><th style="width:26%">症状</th><th style="width:20%">调什么</th><th style="width:14%">方向</th><th>调不动时怎么办</th></tr>
+<tr>
+<td>$\mathrm{CV}_{lat}&gt;0.20$<br><span class="small">同层不公平</span></td>
+<td><strong>$ATK_{法杖}$</strong><br><span class="small">弹性 1.25，最有效</span></td>
+<td class="c">往谷底靠</td>
+<td>若已在谷底仍超标，说明是"某把武器本身太弱"，要<strong>改武器机制</strong>而不是继续加攻击力</td>
+</tr>
+<tr>
+<td>$\sigma_{traj}&gt;0.20$<br><span class="small">成长不同步</span></td>
+<td><strong>$\beta$</strong> 调小<br><span class="small">弹性 0.767，单调</span></td>
+<td class="c">↓</td>
+<td rowspan="2"><strong>调 $ATK$ 与 $s$ 完全无效（弹性 0.000）——这是命题 2 的实测证据：纯强度参数治不好曲线不齐。</strong>$\beta$ 已到下限仍超标，就是<strong>机制病</strong>，必须改公式（护甲 7.5 算例 2、精英缩放算例 3）</td>
+</tr>
+<tr>
+<td>$R_{traj}&gt;1.8$<br><span class="small">同上，直观版</span></td>
+<td><strong>$\beta$</strong> 调小</td>
+<td class="c">↓</td>
+</tr>
+<tr>
+<td>$M$ 的均值不在 $[0.30,\ 0.95]$<br><span class="small">打不过 / 太轻松</span></td>
+<td><strong>$s$</strong></td>
+<td class="c">高则 ↓<br>低则 ↑</td>
+<td><strong>唯一有效旋钮，且与平衡指标完全正交</strong>——可以放心单独调，不会把已经调好的平衡破坏掉</td>
+</tr>
+<tr>
+<td>层间递增比 $r\notin[1.15,\ 2.2]$</td>
+<td><strong>$缩放_{S2}$</strong></td>
+<td class="c">$r$ 小则 ↑</td>
+<td>这是硬约束，不动它 $J$ 会暴涨到 3.9 以上</td>
+</tr>
+<tr>
+<td>$\tau&lt;0.8$<br><span class="small">强弱反转</span></td>
+<td colspan="2" class="c"><strong>不是数值问题，调参无效</strong></td>
+<td>改机制：护甲只减物理伤害（对自爆怪无效）、重甲加真实代价（移速惩罚）。<strong>见 8.7 坑 2</strong></td>
+</tr>
+<tr>
+<td>三项指标同时超标且怎么调都不动</td>
+<td colspan="2" class="c"><strong>改公式结构</strong></td>
+<td>回到 7.5 的三个算例：固定减法护甲、精英缩放不统一——<strong>这两种病调数值永远治不好</strong></td>
+</tr>
+</table>
+<div class="cap">表 8-3f　症状 → 参数 → 方向（整改闭环的操作手册）</div>
+
+<div class="box good">
+<p style="margin:0 0 8px"><strong>把两张表连起来用，完整的整改闭环是这样的</strong>：</p>
+<ol style="margin:0">
+<li>算五个指标 → 对照 8.4 表 8-3c 判定哪一项不合格；</li>
+<li>查本节的<strong>表 B</strong>，确定要动的参数和方向；</li>
+<li>改 $\theta$，<strong>回到第 ② 步重跑</strong>（六步闭环见 2.0 表 2-0）；</li>
+<li>重复直到三项全部落入"优"区间，或确认是机制病需要改公式。</li>
+</ol>
+<p style="margin:8px 0 0"><strong>这套流程能写成论文里的一句话</strong>：本文的调参不是盲搜，而是由敏感度矩阵指导的定向修正——每个指标都对应唯一的主控参数，且主控参数之间近似正交（$s$ 与全部平衡指标正交、$ATK$ 与全部曲线指标正交），因此可以逐项独立修正而不相互干扰。</p>
+</div>
+
+<div class="box warn">
+<p style="margin:0"><strong>一个必须说清的分寸</strong>：$\beta$ 是唯一对 $\sigma_{traj}$ 有强作用的旋钮，而 9.5 已实测"$\beta$ 越大平衡越差"。这意味着<strong>把 $\beta$ 一路调到 0 就能让 $\sigma_{traj}$ 达标</strong>——但那是退化解（场景机制失效，所有场景变成同一个场景）。目标函数里的 $P_{affect}$ 项就是专门防这个的。论文里必须同时报告 $\beta$ 与场景影响强度，<strong>不能只报"$\sigma_{traj}$ 达标了"。</strong></p>
+</div>
+
+<h3>8.6 实测数据（可直接放进论文）</h3>
+
+<h4>数据集 A：极简系统（6 Build × 2 场景）</h4>
+
+<table>
+<tr><th style="width:32%">指标</th><th style="width:17%">调参前</th><th style="width:17%">调参后</th><th>改善</th></tr>
+<tr><td>$\mathrm{CV}_{lat}$（层内离散）</td><td class="num">0.2539</td><td class="num">0.1146</td><td class="num">↓ 54.9%</td></tr>
+<tr><td>轨迹离散度<br><span class="small">脚本 <code>curve_cv</code> 口径</span></td><td class="num">0.5513</td><td class="num">0.1831</td><td class="num">↓ 66.8%</td></tr>
+<tr><td>$\sigma_{traj}$<br><span class="small">正文 8.3 口径</span></td><td class="num">0.5500</td><td class="num">0.1936</td><td class="num">↓ 64.8%</td></tr>
+<tr><td>$R_{traj}$</td><td class="num">3.8873</td><td class="num">1.7172</td><td class="num">↓ 55.8%</td></tr>
+<tr><td>极差/最小比<br><span class="small"><code>spread_ratio</code>$=(\max-\min)/\min$</span></td><td class="num">3.0873</td><td class="num">0.3670</td><td class="num">↓ 88.1%</td></tr>
+<tr><td>综合目标 $J$</td><td class="num">20.2077</td><td class="num">0.2245</td><td class="num">↓ 98.9%</td></tr>
+<tr><td>代数连通度 $\lambda_2$</td><td colspan="3" class="num">3.7545（图连通性良好，无孤立子系统）</td></tr>
+</table>
+<div class="cap">表 8-4　极简系统调参前后对比；12 个格子调参后落在 $[0.4217,\ 0.8926]$，调参前为 $[0.8538,\ 3.6270]$</div>
+
+<div class="box key">
+<p style="margin:0"><strong><code>spread_ratio</code> 的定义必须在论文里写明</strong>：脚本第 155 行是 <code>(max(ds) - min(ds)) / min(ds)</code>，即<strong>极差相对于最小值的比值</strong>，<em>不是</em> $\max/\min$。调参前 3.0873 对应 $\max/\min=4.0873$，调参后 0.3670 对应 $\max/\min=1.3670$。两个定义相差 1，不写明则手算对不上。</p>
+</div>
+
+<div class="box good">
+<p style="margin:0">用 8.4 的阈值检验本表：$\mathrm{CV}_{lat}=0.1146&lt;0.20$ ✅　$\sigma_{traj}=0.1936&lt;0.20$ ✅　$R_{traj}=1.7172&lt;1.8$ ✅，<strong>三项全部达标</strong>。$\tau$ 与 $F$ 在 MVS 上<strong>无法计算</strong>——只有 2 个场景就没有"相邻层"可供排名比较，也没有 BOT 重复采样。<br><strong>论文里的写法</strong>：MVS 数据集只报告前三项，$\tau$ 与 $F$ 留给数据集 B（4 层 + BOT）。不要在这里硬凑五个指标。</p>
+</div>
+
+<div class="box warn">
+<p style="margin:0 0 6px"><strong>⚠ 口径不统一：这是最容易被问穿的一点，必须在论文中交代。</strong></p>
+<p style="margin:0 0 6px">现有三个脚本用了<strong>三种不同定义</strong>的"轨迹离散度"，表里的数字因此<em>不可直接比较</em>：</p>
+<table style="margin:0 0 8px">
+<tr><th style="width:26%">脚本</th><th style="width:36%">定义</th><th>取值</th></tr>
+<tr><td><code>minimal_balance_model.py</code><br><span class="small">第 159 行</span></td><td>对<em>总增幅</em> $G_i$ 直接算总体变异系数 $\mathrm{pstdev}(G)/\mathrm{mean}(G)$<br><span class="small">未取对数 → 不对称；除以均值 → 均值近 0 时爆炸</span></td><td class="num">0.5513</td></tr>
+<tr><td><code>bipartite_diagnosis.py</code><br><span class="small">第 120 行</span></td><td>对 $\ln G_i$ 算<em>样本</em>标准差（L1→L3 代理，单段）</td><td class="num">0.518</td></tr>
+<tr><td><code>multiplex_balance.py</code><br><span class="small">第 168 行</span></td><td>逐层 $\mathrm{std}_i(\Delta_{i,l})$ 再对层取 RMS（<strong>即正文推荐的定义</strong>）</td><td class="num">0.3421</td></tr>
+</table>
+<p style="margin:0 0 6px"><strong>处理办法（三选一，推荐第 1 条）</strong>：</p>
+<ol style="margin:0">
+<li><strong>统一到正文定义的 $\sigma_{traj}$</strong>，把 <code>minimal_balance_model.py</code> 第 159 行改为
+<pre style="margin:4px 0 0"><code>g   = [math.log(v) for v in gaps.values()]
+mu  = sum(g) / len(g)
+o['sigma_traj'] = math.sqrt(sum((x - mu) ** 2 for x in g) / (len(g) - 1))</code></pre>
+并同步把目标函数里的 <code>curve_cv</code> 换掉。重跑后数值会变，但<strong>与正文、与其他两个脚本一致</strong>。</li>
+<li>若坚持保留 <code>curve_cv</code>，正文须改称 $\mathrm{CV}_{traj}$ 并说明理由（会与"不用 CV"的论证冲突，<span class="tag r">不推荐</span>）。</li>
+<li>论文中<strong>只用一套脚本的数据</strong>，其余脚本结果仅在附录作为"不同口径的稳健性检验"出现。</li>
+</ol>
+</div>
+
+<h4>数据集 B：开题报告真实数值</h4>
+
+<table>
+<tr><th style="width:34%">诊断项</th><th>结果</th></tr>
+<tr><td>支配策略</td><td>B3（近战 + 战术护甲 50）在 <strong>8/8 项上全部最优</strong></td></tr>
+<tr><td>唯一反制点</td><td>自爆怪精英是唯一能威胁 B3 的怪（$D=0.172$，其余 ≤ 0.025）</td></tr>
+<tr><td>冗余选项</td><td>B1/B4/B6 行为向量相似度 = <strong>1.00000</strong>（三把武器只有 DPS 数值差，无机制差）</td></tr>
+<tr><td>曲线崩塌</td><td>B1/B4/B6 三层增幅 11.46×，B3 <strong>34.38×</strong>，$\sigma_{traj}=0.518$</td></tr>
+<tr><td>元件枢纽（多层网络专属）</td><td><strong>轻甲 2.110</strong> &gt; 战甲 1.790 &gt; 近战刀 1.493 &gt; 狙击枪 1.486 &gt; 手枪 0.855</td></tr>
+<tr><td>偏科检测</td><td>B7 versatility = <strong>0.593</strong>，$\tau(D_1,\text{Boss})=0.714 &lt; 0.8$ → <strong>检出强弱反转</strong></td></tr>
+<tr><td>改百分比减伤后</td><td>$\sigma_{traj}$：0.3421 → <strong>0.1046</strong>；但 B7 仍 297.14×（<em>改公式治不了机制病</em>）</td></tr>
+</table>
+<div class="cap">表 8-5　真实数值下的诊断结果</div>
+
+<h3>8.7 两个必须主动交代的坑</h3>
+
+<div class="box warn">
+<p><strong>坑 1：余弦相似度只测形状，不测强度。</strong>换成百分比减伤后，脚本报出全部 15 对相似度 = 1.0，因为每列都变成同一行的标量倍。<strong>修法</strong>：判据改为"余弦 &gt; 0.995 <em>且</em> 均值比落在 $[0.8,1.25]$"，两个条件同时满足才算冗余。</p>
+<p style="margin-bottom:0"><strong>坑 2：$\sigma_{traj}=0$ 也不是好事。</strong>百分比减伤让曲线完美平行，代价是护甲与怪物攻击力彻底脱钩——它退化成全局难度折扣，"选不选重甲"只是"变简单"而非"换打法"。<strong>真正要的是"一致但保留差异"</strong>：护甲只减物理伤害（对自爆怪无效）、重甲给 −10% 移速的真实代价（你游戏里的战术护甲已有 −2% 移速惩罚，可以加大）。这条呼应 Riot 的 meta diversity targets，是很有分量的讨论。</p>
+</div>
+
+<h3>8.8 指标体系的构造逻辑：为什么是这五个，图论量为什么不进 $J$</h3>
+
+<p>你手上有两类量：$M$ 上的五个指标，和 $A$ 上的图论量（PageRank、加权度、代数连通度 $\lambda_2$、versatility）。<strong>后者当然也能衡量一些东西</strong>——否则我们建图干什么？问题是它们衡量的是<em>另一类东西</em>，性质不同，因此在方法里的位置也不同。</p>
+
+<table>
+<tr><th style="width:16%"></th><th style="width:30%">$M$ 上的五指标</th><th style="width:28%">$A$ 上的图论量</th><th>后果</th></tr>
+<tr><td><strong>衡量对象</strong></td><td>结果——玩家实际体验到的难度</td><td>结构——设计方案中的关系</td><td>一个管"好不好"，一个管"为什么"</td></tr>
+<tr><td><strong>理想值</strong></td><td>有：$0$ 即完全一致</td><td>无公认值（PageRank 是集中好还是分散好？）</td><td>没有理想值就无法写成"最小化某量"</td></tr>
+<tr><td><strong>对 $\theta$ 的敏感性</strong></td><td>大部分敏感</td><td>$\lambda_2$ 完全不敏感（见下表）</td><td>不敏感则优化器推不动</td></tr>
+<tr><td><strong>在方法中的位置</strong></td><td><strong>目标函数</strong>（被优化）</td><td><strong>诊断与约束</strong>（解释与兜底）</td><td>分工，不是替代</td></tr>
+</table>
+<div class="cap">表 8-6　两类量的性质对照</div>
+
+<h4>一个量要能进目标函数，必须同时满足三个条件</h4>
+
+<ol>
+<li><strong>有明确的期望方向</strong>——越小越好还是越大越好，不能有歧义；</li>
+<li><strong>有可标定的目标值或阈值</strong>——否则无法判断"到没到"；</li>
+<li><strong>对 $\theta$ 足够敏感</strong>——梯度不能恒为 $0$，否则优化器推不动它。</li>
+</ol>
+
+<p>在 $\theta^\ast$ 处对每个分量施加 $+5\%$ 扰动，实测灵敏度（$|\partial \,\cdot\,/\partial\ln x|$）：</p>
+
+<table>
+<tr><th style="width:18%">量</th><th style="width:15%">$\beta$</th><th style="width:15%">$s$</th><th style="width:15%">$ATK_{法杖}$</th><th style="width:15%">$DEF_{板甲}$</th><th style="width:12%">$缩放_{S2}$</th><th>能否进 $J$</th></tr>
+<tr><td>$\mathrm{CV}_{lat}$</td><td class="num">0.0476</td><td class="num">0.0000</td><td class="num">0.0602</td><td class="num">0.0154</td><td class="num">0.0000</td><td>✅ 三项条件全满足</td></tr>
+<tr><td>$\sigma_{traj}$</td><td class="num">0.1450</td><td class="num">0.0000</td><td class="num">0.0000</td><td class="num">0.0396</td><td class="num">0.0000</td><td>✅ 三项条件全满足</td></tr>
+<tr><td>$\lambda_2$</td><td class="num">0.0000</td><td class="num">0.0000</td><td class="num">0.0000</td><td class="num">0.0000</td><td class="num">0.0000</td><td>❌ 条件 3 不满足，梯度恒为 0</td></tr>
+<tr><td>PageRank（最大）</td><td class="num">0.1230</td><td class="num">0.1229</td><td class="num">0.1229</td><td class="num">0.1229</td><td class="num">0.1229</td><td>❌ 条件 1、2 不满足</td></tr>
+</table>
+<div class="cap">表 8-7　$\theta^\ast$ 处的灵敏度实测（PageRank 行为量纲，看末位变化）</div>
+
+<div class="box key">
+<p style="margin:0 0 8px"><strong>$\lambda_2$ 为什么是 0</strong>：元件层的协同边权只由四维标签 $d_u$ 的余弦决定，与任何数值参数无关；$\theta$ 里没有一个分量会改变它。所以<strong>$\lambda_2$ 对优化完全"推不动"</strong>——把它放进 $J$，优化器怎么搜索它都不变，等于没放。</p>
+<p style="margin:0"><strong>PageRank 为什么也不行</strong>：它只对 $\beta$ 有反应（0.1229→0.1230），且更重要的是<strong>它没有期望方向</strong>——中心化意味着"有核心元件"，分散意味着"无核心"，哪一种是好设计？取决于设计意图，没有普适答案。<strong>没有理想值的量，无法写成最小化目标。</strong></p>
+</div>
+
+<h4>图论量的正确位置：诊断与约束</h4>
+
+<p>不能进目标函数，不等于没用。它们有三处正当用途，都能写进论文：</p>
+
+<ol>
+<li><strong>诊断（回答"为什么"）</strong>：元件枢纽度指出"该动哪个元件"，$\lambda_2$ 预警"存在孤立子系统"，versatility 检出"偏科"。这是 7.1 节表 7-1 的内容。</li>
+<li><strong>约束（兜底）</strong>：$\lambda_2&gt;\varepsilon$ 保证无孤岛；熵 $H&gt;H_{min}$ 保证 meta 多样性。约束不需要理想值，只需要一个下界，因此图论量做约束是合适的。</li>
+<li><strong>目标图（进阶）</strong>：见下方文献依据——这是把图论量变成优化目标的<em>正确</em>做法，但需要策划先给出目标图。</li>
+</ol>
+
+<h4>命题 2：$\sigma_{traj}$ 的不变类——什么时候调参根本没用</h4>
+
+<div class="box key">
+<p style="margin:0 0 6px"><strong>命题 2（不变类）</strong>　设参数 $x$ 的改动使 Build $i$ 的难度在<em>所有</em>场景都乘同一个常数 $c_i(x)$，即 $\ln M_{i,l}\to\ln M_{i,l}+\ln c_i$。则</p>
+<p style="margin:0 0 6px">$$\Delta'_{i,l}=\big(\ln M_{i,l+1}+\ln c_i\big)-\big(\ln M_{i,l}+\ln c_i\big)=\Delta_{i,l}$$</p>
+<p style="margin:0">即<strong>$\sigma_{traj}$ 与 $\mathrm{CV}_{lat}$ 都不变</strong>。反之，若 $\ln c_i$ 随场景 $l$ 变化（改动与场景参数耦合），则二者改变。</p>
+</div>
+
+<p>实测（$\theta^\ast$ 处，各元件 +20%）：</p>
+
+<table>
+<tr><th style="width:26%">改动</th><th style="width:22%">是否跨场景同比例</th><th style="width:18%">$\sigma_{traj}$</th><th style="width:18%">$\mathrm{CV}_{lat}$</th><th>结论</th></tr>
+<tr><td>短剑攻击力 +20%</td><td>是（纯 DPS）</td><td class="num">0.193583 → <strong>0.193583</strong></td><td class="num">0.1146 → 0.1306</td><td>$\sigma_{traj}$ 纹丝不动</td></tr>
+<tr><td>法杖攻击力 +20%</td><td>是（纯 DPS）</td><td class="num">0.193583 → <strong>0.193583</strong></td><td class="num">0.1146 → 0.1433</td><td>同上</td></tr>
+<tr><td>速度药水移速 +20%</td><td>否（闪避含 $\mu_l$）</td><td class="num">0.193583 → 0.191579</td><td class="num">0.1146 → 0.1295</td><td>微变</td></tr>
+<tr><td>板甲防御 +20%</td><td>否（EHP 含 $\mu_l$）</td><td class="num">0.193583 → 0.201570</td><td class="num">0.1146 → 0.1183</td><td>明显变</td></tr>
+</table>
+<div class="cap">表 8-8　命题 2 的实测验证</div>
+
+<div class="box good">
+<p style="margin:0 0 8px"><strong>这条命题的实践价值（可直接写进论文的"调参分工表"）</strong>：</p>
+<ul style="margin:0">
+<li>想改善<strong>水平平衡</strong> $\mathrm{CV}_{lat}$ → 调武器攻击力、护甲等<em>纯强度</em>参数；</li>
+<li>想改善<strong>曲线一致性</strong> $\sigma_{traj}$ → 纯强度参数<em>完全无效</em>，必须调<strong>与场景耦合</strong>的参数：$\beta$（射程适配）、含 $\mu_l$ 的防御项、移速→闪避；</li>
+<li>$s$ 与 $缩放_{S2}$ 对两个平衡指标的灵敏度<strong>严格为 0</strong>（前者是命题 1，后者是同理的场景级缩放），它们只管难度高度与场景比值。</li>
+</ul>
+<p style="margin:8px 0 0">换句话说：<strong>"调高攻击力"永远治不好难度曲线不齐</strong>——这不是经验之谈，是可以证明的。</p>
+</div>
+
+<h4>文献依据（三条，逐条对得上号）</h4>
+
+<table>
+<tr><th style="width:30%">文献</th><th>支持本文的哪一处</th></tr>
+<tr><td><strong>Hernandez, D., Gbadamosi, C. T. T., Goodman, J. &amp; Walker, J. A.</strong> <em>Metagame Autobalancing for Competitive Multiplayer Games</em>. IEEE CoG 2020, pp. 275–282. DOI: 10.1109/CoG47356.2020.9231762</td>
+<td>让策划先画一张"平衡目标图"（各策略应有的相对分数），再用 simulation-based optimization 最小化与该图的距离。原文强调这<strong>"permits more sophisticated balance targets to be defined beyond a simple requirement of equal win chances"</strong>——<strong>这正是 $\sigma_{traj}$ 的立论依据</strong>：平衡目标不止"同层相等"，还可以是"跨层增速一致"。</td></tr>
+<tr><td><em>Bilevel Entropy based Mechanism Design for Balancing Meta in Video Games</em>. AAMAS 2023（ifaamas.org/Proceedings/aamas2023/pdfs/p2134.pdf）</td>
+<td>以<strong>最大化混合策略熵</strong>为 meta 平衡目标；并明确指出 Hernandez 方法的三个局限，其中第一条就是<strong>"assumes a known target payoff that might not hold in complex video games"</strong>——<strong>注意：该文并未论及本文</strong>，它批评的是 Hernandez 的 ERG；此处是<em>本文借用</em>其批评来支撑自身的路线选择——我们没有那个先验目标图。（其另两条局限中，"采样复杂度随组合空间指数增长"对本文<em>不成立</em>，因为本文用 TTK 解析模型而非采样。）</td></tr>
+<tr><td><strong>Ford, C. &amp; Cone, M.</strong>（EAAI）<em>Game Balancing in Dominion: An Approach to Identifying Problematic Game Elements</em></td>
+<td>把平衡定义为<strong>"elements with similar reward distributions, so that no element is dominant"</strong>，目标是<em>识别出问题元素</em>而非直接优化——<strong>这正是本文把图论量定位为"诊断"的同行做法</strong>。</td></tr>
+</table>
+<div class="cap">表 8-9　指标体系设计的文献依据</div>
+
+<h3>8.9 图论工具箱的适用范围：不是用不用，而是用在哪张图上</h3>
+
+<p>上一节说明：图论量不能直接进目标函数。但这不等于它们<em>没用</em>。真正的问题是——<strong>同一个工具，用在 $A$ 上只能做诊断，用在 $M$ 上就能做评价。</strong></p>
+
+<div class="box key">
+<p style="margin:0"><strong>关键构造</strong>：把难度矩阵 $M$ 看成一张<strong>加权二部图</strong>——左侧 $n$ 个 Build 节点，右侧 $L$ 个层节点，边 $(i,l)$ 的权就是难度值 $M_{i,l}$。这样一来，加权度、中心性、谱分解这些工具全部有了明确语义：<br>
+Build 节点的加权度 = 该 Build 的全程总难度；层节点的加权度 = 该层的整体难度；$M$ 的奇异值分解 = 这张二部图的谱。<br>
+<strong>$M$ 与 $A$ 的区别不在于"是不是图"，而在于 $M$ 的每条边是一个<em>结果</em>（实测或解析算出的难度），$A$ 的每条边是一种<em>关系</em>（设计上的协同/依赖）。</strong></p>
+</div>
+
+<table>
+<tr><th style="width:20%">工具</th><th style="width:12%">裁决</th><th style="width:36%">理由</th><th>正确用法</th></tr>
+<tr><td><strong>1. 加权度</strong></td><td><span class="tag">谨慎</span></td><td>它等于<strong>边际和</strong>——对矩阵按行或列求和，Excel 求和结果相同，图论未增加信息；且实测中心性与参数灵敏度 $r=-0.475$（不显著）</td><td>移到 $M$ 的二部图上：Build 加权度 = 全程总难度，语义清晰</td></tr>
+<tr><td><strong>2. 介数中心性</strong></td><td><span class="tag r">不用</span></td><td>按三层图实测：6 个随机种子给出 <strong>6 种不同排序</strong>，且每个种子平均有 2 个节点介数为 0；根本原因是存在 P→D 直达边时，24 条绕行路径无一比直达更短；且三类跨层边权量纲不同，无合成规则</td><td>—</td></tr>
+<tr><td><strong>3. 特征向量中心性</strong></td><td><span class="tag g">可用</span></td><td>实测<strong>能</strong>定位失衡所在行；但对两类失衡形态几乎一致，<strong>区分不了类型</strong>（见下表）</td><td>作为诊断第一步：先用它找"哪一行"，再用 $\mathrm{CV}_{lat}$ / $\sigma_{traj}$ 定性</td></tr>
+<tr><td><strong>4. 接近中心性</strong></td><td><span class="tag">谨慎</span></td><td>在稠密加权图上退化为加权度的单调函数（距离取倒数后即调和均值），信息冗余</td><td>仅当图是<em>稀疏</em>的（如只连强克制关系）才有独立信息</td></tr>
+<tr><td><strong>5a. 连通分量</strong></td><td><span class="tag">谨慎</span></td><td>需先阈值化，本质就是聚类，用 k-means 也能得到</td><td>作为<strong>呈现方式</strong>很好——"6 套配置裂成两半"比一堆数字直观</td></tr>
+<tr><td><strong>5b. 聚类系数</strong></td><td><span class="tag r">不用</span></td><td>在加权近完全图上恒 $\approx 1$，没有区分度</td><td>同上，稀疏图才有意义</td></tr>
+<tr><td><strong>6a. 跨层耦合</strong><br><span class="small">（边权方差）</span></td><td><span class="tag g">可用</span></td><td><strong>这一条最有价值</strong>："同一地牢、不同配置的难度方差"就是 $\mathrm{CV}_{lat}$ 的策划语言</td><td>直接采纳，在论文中改名并给出形式化定义</td></tr>
+<tr><td><strong>6b. 多层最短路</strong></td><td><span class="tag r">不用</span></td><td>同介数：直达边使绕行路径非最短；跨层边权量纲不同，代价无法合成</td><td>—</td></tr>
+<tr><td><strong>7. 谱分解</strong></td><td><span class="tag g">可用</span></td><td>实测与 $\sigma_{traj}$ 相关 $r=+0.825$（见下表），可做独立互证</td><td><strong>用在 $M$ 上，不是 $A$ 上</strong>；主特征向量用于定位失衡行</td></tr>
+</table>
+<div class="cap">表 8-10　七类图论工具的逐条裁决</div>
+
+<h4>实测一：特征向量能定位"哪一行"，但区分不了"哪一类"</h4>
+
+<p>构造一个完美平衡的 $M$（各行成比例，$\sigma_{traj}=0$），再制造两种<em>治法完全不同</em>的失衡：</p>
+
+<table>
+<tr><th style="width:26%">情形</th><th style="width:22%">主特征向量最大分量</th><th style="width:16%">$\mathrm{CV}_{lat}$</th><th style="width:16%">$\sigma_{traj}$</th><th>该怎样修</th></tr>
+<tr><td>完美平衡（秩 1）</td><td class="num">第 2 行 0.4720</td><td class="num">0.0954</td><td class="num">0.0000</td><td>—</td></tr>
+<tr><td><strong>A</strong>：第 3 行整体 ×3<br><span class="small">（T0 超模）</span></td><td class="num"><strong>第 3 行 0.7504</strong></td><td class="num"><strong>0.4622</strong></td><td class="num"><strong>0.0000</strong></td><td>调强度（攻击力、护甲）</td></tr>
+<tr><td><strong>B</strong>：第 3 行仅末列 ×3<br><span class="small">（后期崩）</span></td><td class="num"><strong>第 3 行 0.6807</strong></td><td class="num">0.2177</td><td class="num"><strong>0.3171</strong></td><td>调机制／场景耦合（$\beta$、含 $\mu_l$ 的项）</td></tr>
+</table>
+<div class="cap">表 8-11　主特征向量只能定位，$\mathrm{CV}_{lat}$ 与 $\sigma_{traj}$ 才能定性</div>
+
+<div class="box good">
+<p style="margin:0"><strong>这张表就是本文创新点最硬的证据。</strong>A、B 两种失衡的主特征向量形态几乎一样（都指向第 3 行、其余小幅下降），<strong>它无法告诉你该调强度还是该调机制</strong>。而 $\mathrm{CV}_{lat}$ 与 $\sigma_{traj}$ 构成二维判别：A 是"水平失衡"（$\mathrm{CV}_{lat}$ 剧变、$\sigma_{traj}$ 不变），B 是"曲线失衡"（$\sigma_{traj}$ 剧变）。<strong>两种病的治法完全不同，能区分它们，就是本文指标的价值。</strong><br>
+（顺带：A 情形下 $\sigma_{traj}$ 严格为 $0.0000$，再次验证命题 2。）</p>
+</div>
+
+<h4>实测二：谱分解能用，但只能互证、不能替代</h4>
+
+<p>在 300 个随机 $\theta$ 上比较三种"离平衡多远"的度量：</p>
+
+<table>
+<tr><th style="width:46%">度量对</th><th style="width:18%">相关系数</th><th>读法</th></tr>
+<tr><td>$\sigma_{traj}$ &nbsp;vs&nbsp; SVD $\sigma_2/\sigma_1$（对 $M$ 本身）</td><td class="num">$+0.8251$</td><td>测的是同一件事的两个侧面，<strong>可互证，不可替代</strong></td></tr>
+<tr><td>$\sigma_{traj}$ &nbsp;vs&nbsp; 双中心化残差占比</td><td class="num">$+0.5234$</td><td>相关偏弱，原因见下</td></tr>
+<tr><td>双中心化残差占比 &nbsp;vs&nbsp; $\sigma_2/\sigma_1$</td><td class="num">$+0.8508$</td><td>两者都受主效应影响</td></tr>
+</table>
+<div class="cap">表 8-12　三种度量的相关性（300 个随机 $\theta$，seed=2024）</div>
+
+<div class="box key">
+<p style="margin:0 0 8px"><strong>为什么第二个相关只有 0.52？这恰恰是 $\sigma_{traj}$ 的设计优点。</strong></p>
+<p style="margin:0 0 8px">两列时 $\Delta_i=(\text{列效应})-2r_i$，于是 $\sigma_{traj}=2\cdot\mathrm{std}(r)$——<strong>它完全不受"行主效应"干扰</strong>（某个 Build 本来就强，不影响它的增速）。而双中心化残差占比的分母里含行主效应与列主效应，会被"Build 之间的固有强弱差"稀释。</p>
+<p style="margin:0"><strong>结论</strong>：$\sigma_{traj}$ 是<strong>纯粹的交互效应度量</strong>（先用差分消掉主效应），谱残差占比是"交互占总变异的比例"。前者更干净，这也解释了为什么它能区分 A、B 两类失衡而谱占比不行。</p>
+</div>
+
+<div class="box good">
+<p style="margin:0"><strong>一个可以写进论文的落脚点</strong>：$\sigma_{traj}=0$ 等价于<strong>双向方差分析（two-way ANOVA）的交互项为零</strong>，即 $\ln M$ 可加分解为"行效应（Build 强度）+ 列效应（层难度）"而无交互。<br>
+这给自造指标接上了经典统计学——答辩时说"它是双向 ANOVA 交互项的一个尺度化版本"，比说"我们自己定义的"硬气得多。</p>
+</div>
+
+<h2 id="c9">第 9 章　参数如何调整：目标函数与搜索</h2>
+
+<h3>9.1 参数向量 $\theta$（真实系统 10~15 个，MVS 精简为 5 个）</h3>
+
+<table>
+<tr><th style="width:16%">类别</th><th style="width:34%">参数</th><th>说明</th></tr>
+<tr><td>怪物侧</td><td>$HP_{怪}$、$ATK_{怪}$、$CD_{怪}$、$s_{精英}$</td><td>精英缩放建议统一为 <strong>×3 HP、×2 ATK</strong>（现为 ×2.75~3.00 / ×1.50~2.08，不统一，见 7.5 算例 3）</td></tr>
+<tr><td>玩家侧</td><td>$DPS_{武器}$、$armor$、$K$（护甲常数）</td><td>$K\approx50$；护甲公式改为百分比减伤</td></tr>
+<tr><td>关卡侧</td><td>$n_l$（该层怪数）、$k_l$（同屏怪数）</td><td>这是推动难度上升的<strong>主力变量</strong>，你的开题报告目前未给，需补</td></tr>
+<tr><td>全局侧</td><td>$s$（全体怪物血量缩放）</td><td><strong>只管绝对难度</strong>，与五个平衡指标全部正交（见 9.2 命题 1）</td></tr>
+<tr><td>删减项</td><td colspan="2">敏感度扫描后变化 &lt; 2% 的参数直接固定，不要留在搜索空间里</td></tr>
+</table>
+<div class="cap">表 9-1　参数向量构成</div>
+
+<h3>9.2 一个可证明的性质：绝对难度与相对平衡可以解耦</h3>
+
+<p>参数向量里有一类特殊旋钮——<strong>全局强度缩放</strong>（记作 $s$，作用于全体怪物血量，脚本里是 <code>mon_hp</code>）。它有一个能直接写进论文的性质：</p>
+
+<div class="box key">
+<p style="margin:0 0 6px"><strong>命题 1（尺度解耦）</strong>　设 $M$ 为难度矩阵，$s&gt;0$ 为全体怪物血量的缩放系数。因 $D=T_{kill}/T_{surv}$ 中 $T_{kill}\propto HP_{怪}$ 而 $T_{surv}$ 与 $HP_{怪}$ 无关，缩放后 $M'_{i,l}=s\,M_{i,l}$。此时：</p>
+<ul style="margin:0">
+<li>$\mathrm{CV}_{lat}$ 不变：均值与标准差同乘 $s$，$\sigma'/\mu'=(s\sigma)/(s\mu)=\sigma/\mu$</li>
+<li>$\sigma_{traj}$ 不变：$\Delta'_{i,l}=\ln(sM_{i,l+1})-\ln(sM_{i,l})=\ln M_{i,l+1}-\ln M_{i,l}=\Delta_{i,l}$</li>
+<li>$R_{traj}$ 不变：$G'_i=sM_{i,L}/(sM_{i,1})=G_i$</li>
+<li>$\tau$ 与单调性不变：逐列排名、各行升降序都不受正的标量倍影响</li>
+</ul>
+<p style="margin:6px 0 0">即<strong>五个指标在全局缩放下全部不变，只有绝对难度改变</strong>。</p>
+</div>
+
+<p>实测验证（固定 $\theta^\ast$ 的其余四个分量，只扫 $s$）：</p>
+
+<table>
+<tr><th style="width:18%">$s$</th><th style="width:20%">S1 难度均值</th><th style="width:16%">$\mathrm{CV}_{lat}$</th><th style="width:16%">$\sigma_{traj}$</th><th>$R_{traj}$</th></tr>
+<tr><td class="num">0.30</td><td class="num">0.4396</td><td class="num">0.114602</td><td class="num">0.193583</td><td class="num">1.717162</td></tr>
+<tr><td class="num">0.35（$\theta^\ast$）</td><td class="num">0.5129</td><td class="num">0.114602</td><td class="num">0.193583</td><td class="num">1.717162</td></tr>
+<tr><td class="num">0.45</td><td class="num">0.6594</td><td class="num">0.114602</td><td class="num">0.193583</td><td class="num">1.717162</td></tr>
+<tr><td class="num">0.60</td><td class="num">0.8793</td><td class="num">0.114602</td><td class="num">0.193583</td><td class="num">1.717162</td></tr>
+</table>
+<div class="cap">表 9-2　只改 $s$，四个平衡指标小数点后六位完全相同</div>
+
+<div class="box good">
+<p style="margin:0 0 8px"><strong>实用价值</strong>：调参可以<strong>分两步做，互不干扰</strong>——先用 $\beta$、武器攻击力、护甲、场景缩放把<em>相对平衡</em>（五个指标）调好；再用 $s$ 一个参数把<em>绝对难度</em>整体平移进心流通道。搜索空间因此从"五个参数一起调"降为"四个调平衡 + 一个调高度"。</p>
+<p style="margin:0"><strong>可直接写进论文的推论</strong>：难度曲线一致性是一个<strong>尺度不变的性质</strong>，它刻画 Build 之间的<em>相对关系</em>而非绝对强弱，因此本方法对"整体调高/调低难度"这类改动免疫——这正是我们希望指标具备的鲁棒性。</p>
+</div>
+
+<h3>9.3 目标函数</h3>
+
+<div class="formula">
+$$J(\theta)=\underbrace{\overline{\mathrm{CV}}_{lat}}_{\text{水平项 }\times 1.0} + \underbrace{0.6\,\mathrm{CV}_{traj}}_{\text{曲线项}} + 5\,P_{band} + 6\,P_{ratio} + 10\,P_{gap} + 4\,P_{affect}$$
+</div>
+
+<ul>
+<li>$P_{band}=\sum_{s}\big[\max(0,\ \mu_s-0.95)+\max(0,\ 0.30-\mu_s)\big]$ —— 场景<em>均值</em> $\mu_s$ 必须落在难度带 $[0.30,\ 0.95]$</li>
+<li>$P_{ratio}=\max(0,\ 1.15-r)+\max(0,\ r-2.2)$ —— 场景间递增比 $r=\mu_{S2}/\mu_{S1}$ 必须落在 $[1.15,\ 2.2]$，保证"下一层更难"</li>
+<li>$P_{gap}=\max(0,\ 1.05-\min_i G_i)$ —— 每个 Build 的跨场景增幅 $G_i=M_{i,S2}/M_{i,S1}$ 都必须 $>1.05$，<strong>不许有 Build 越打越轻松</strong></li>
+<li>$P_{affect}=\max(0,\ 0.15-\text{affect}(\beta))$ —— 场景机制必须有实质影响，<strong>防止 $\beta\to0$ 的退化解</strong>（这是目标函数里最巧的一项，答辩时可以讲）</li>
+</ul>
+
+<div class="box key">
+<p style="margin:0 0 8px"><strong>为什么难度带取 $[0.30,\ 0.95]$</strong>：按第 3 章的定义 $D=T_{kill}/T_{surv}$，$D&lt;1$ 表示玩家先杀死怪（能通关），$D&gt;1$ 表示玩家先死。因此<strong>难度带必须整体落在 1 以下</strong>，否则"优化结果"会被读成"玩家根本打不过"。下界 $0.30$ 的含义是：低于此值战斗已毫无压力，失去挑战性。</p>
+<p style="margin:0"><strong>实现上的必要补充</strong>：只靠武器攻击力、护甲、场景缩放这几个<em>局部</em>旋钮，无法把整体难度压进该区间——实测 S1 均值最低只能到 1.2152，因为 S1 怪物血量固定为 300、不在搜索空间内。因此参数向量必须包含一个<strong>全局强度缩放 $s$</strong> 专门负责绝对难度（见 9.2 命题 1，它与全部平衡指标正交，不会干扰调平衡）。</p>
+</div>
+
+<div class="box key">
+<p style="margin:0"><strong>关于权重 0.6 &gt; 1.0 这个反直觉的地方</strong>：曲线项系数 0.6 看似低于水平项 1.0，但 $\mathrm{CV}_{traj}$ 的数值量级（0.55）远大于 $\overline{\mathrm{CV}}_{lat}$（0.25），所以<strong>实际贡献反而是曲线项更大</strong>（0.33 vs 0.25）。答辩时若被问"为什么创新项权重反而小"，就答这一句：看的是<em>绝对贡献</em>而非系数。</p>
+</div>
+
+<h3>9.4 两阶段搜索（纯标准库，几秒跑完）</h3>
+
+<ol>
+<li><strong>阶段一：单参数敏感度扫描</strong>。每个参数在 ±30% 范围内取 7~9 个点，其余固定，记录 $J$ 的变化幅度。<strong>变化 &lt; 2% 的踢出搜索空间</strong>。</li>
+<li><strong>阶段二：粗 → 细网格搜索</strong>。对剩下的 4~5 个参数，先粗网格（每维 5 档）定位盆地，再在最优点邻域细化（每维 5 档，步长减半）。</li>
+</ol>
+
+<pre><code>def objective(prm):
+    m = metrics(prm)                       # 解算出完整难度矩阵 M
+    J = m['cv_mean'] + 0.6 * m['curve_cv'] # 水平项 + 曲线项
+    for s in SCENES:                       # 约束1：难度带
+        mu = m[s]['mean']
+        J += 5 * max(0, mu - 0.95) + 5 * max(0, 0.30 - mu)   # 难度带 [0.30, 0.95]
+    r = m['scene_ratio']                   # 约束2：场景递增
+    J += 6 * max(0, 1.15 - r) + 6 * max(0, r - 2.2)
+    J += 10 * max(0, 1.05 - min(m['gaps'].values()))   # 约束3：逐层递增
+    return J
+
+def optimize():
+    best, bp = 1e9, None
+    for combo in product(grid_beta, grid_atk, grid_def, grid_mon):
+        p = dict(zip(KEYS, combo))
+        v = objective(p)
+        if v &lt; best: best, bp = v, p
+    return bp, best</code></pre>
+
+<div class="box">
+<p style="margin:0"><strong>为什么不用 NSGA-II / 贝叶斯优化</strong>：参数只有 4~5 个有效维度，网格搜索几秒跑完，且<strong>结果完全可复现、可解释</strong>。用进化算法反而说不清"为什么是这个值"。<strong>把 NSGA-II 写在"未来工作"里</strong>（处理 10+ 维时再用），而不是现在用。</p>
+</div>
+
+<h3>9.5 一个反直觉的发现（值得单独做一节）</h3>
+
+<div class="box warn">
+<p style="margin:0"><strong>场景机制强度 $\beta$ 越大，平衡越差。</strong>$\beta$ 从 0.10 升到 0.40，场景辨识度涨了 4 倍，但平衡指标恶化 3~4 倍。原因是结构性的：装备与药水跨场景通用，自由度不足以反向补偿被场景机制放大的武器差异。<br>
+<strong>实践含义</strong>：要用<em>场景内部的数值</em>（怪物 HP / DPS）而非<em>场景机制</em>（射程惩罚）来制造难度差异。<strong>实测最优 $\beta=0.10$。</strong></p>
+</div>
+
+<h3>9.6 优化前后改了什么</h3>
+
+<table>
+<tr><th style="width:26%">参数</th><th style="width:20%">原值</th><th style="width:18%">优化值</th><th>作用</th></tr>
+<tr><td>法杖 ATK</td><td class="num">7.0</td><td class="num">12.0</td><td>拉起法杖系 Build 的输出下限</td></tr>
+<tr><td>板甲 DEF</td><td class="num">6.0</td><td class="num">3.0</td><td>削弱板甲的 EHP 加成，拉近重甲系与疾行系 Build 的生存差距</td></tr>
+<tr><td>场景 2 怪物缩放</td><td class="num">1.00</td><td class="num">1.00</td><td>敏感度低，网格搜索后保持在原位</td></tr>
+<tr><td>怪物血量全局缩放 $s$</td><td class="num">1.00</td><td class="num"><strong>0.35</strong></td><td><strong>只平移绝对难度</strong>，把 12 个格子整体拉进 $[0.30,\ 0.95]$；与四个平衡指标正交（命题 1）</td></tr>
+<tr><td>$\beta$（场景影响强度）</td><td class="num">0.30</td><td class="num">0.10</td><td>权衡曲线上的最优折中（见 9.5）</td></tr>
+</table>
+<div class="cap">表 9-3　优化前后参数对照（MVS 数据集）</div>
+
+<div class="box key">
+<p style="margin:0"><strong>两个数据集的护甲公式不同，务必分表报告。</strong>MVS 数据集用线性加成 $\mathrm{EHP}=(HP_{base}+HP_{装})\left(1+\dfrac{DEF\cdot\mu}{10}\right)$；数据集 B（开题报告真实数值）用百分比减伤 $dmg\left(1-\dfrac{armor}{armor+K}\right)$、$K=50$，见 7.5 算例 2。两者的结果不要放进同一组实验。</p>
+</div>
+
+<h2 id="c10">第 10 章　实验设计与结果评估</h2>
+
+<h3>10.1 五步闭环</h3>
+
+<pre>① 补齐数值    子弹三档伤害 / Boss 攻击力 / 暴击概率 / 每层怪数   ← 硬前置
+② 两条并行链   ├─ 解 M：TTK 解析模型 → 难度矩阵 M (n × L)      ← 进入 J，负责优化
+               └─ 建 A：元件表 → Build 集 → 多层异质图 → 超邻接矩阵  ← 不进 J，负责归因
+③ 诊断         M 上算五指标（CV_lat / σ_traj / R_traj / τ / F）
+               A 上算枢纽度、连通度 λ₂、支配 / 冗余 / 偏科
+④ 优化         两阶段搜索（或贝叶斯优化 baseline）求 θ*
+⑤ 复检         回填 Config → 重建 A 与 M → 重跑全部指标         ← 闭环，不能省</pre>
+
+<div class="box key">
+<p style="margin:0"><strong>第 ② 步是"并行"不是"串行"。</strong>$M$ 由 TTK 解析模型直接从元件数值与 $\theta$ 算出，$A$ 独立建图，<strong>二者不构成计算依赖</strong>（见 7.4）。</p>
+</div>
+
+<div class="box key">
+<p style="margin:0"><strong>第 ⑤ 步的"复检"不能省。</strong>它是闭环的证据：优化必须在<em>重建的图上</em>重新验证，而不是只报告搜索过程中的最优值。论文里叫"优化后复检"，是标准做法。<strong>少了这一步，你的实验就是"开环"的，答辩会被追问。</strong></p>
+</div>
+
+<h3>10.2 五个实验，每个只回答一个问题</h3>
+
+<table>
+<tr><th style="width:7%">编号</th><th style="width:16%">实验</th><th style="width:34%">做法</th><th>回答什么 / 判据</th></tr>
+<tr><td>E1</td><td>基线诊断</td><td>用现状数值直接建图算指标</td><td>现在有多不平衡？<br><span class="small">实测 $\sigma_{traj}=0.518$，B3 在 8/8 项支配</span></td></tr>
+<tr><td>E2</td><td>优化前后对比</td><td>$\theta_0$ vs $\theta^\*$ 的难度曲线图</td><td><strong>论文的门面图</strong>：多条线改前发散、改后平行</td></tr>
+<tr><td>E3</td><td>消融实验</td><td>"只用 $\mathrm{CV}_{lat}$ 优化" vs "加 $\sigma_{traj}$"</td><td>证明 $\sigma_{traj}$ <strong>不可省</strong><br><span class="small">判据：前者第 3 层仍发散</span></td></tr>
+<tr><td>E4</td><td>敏感度分析</td><td>扫 $K$、扫 $\beta$，看 $\sigma_{traj}$ 如何变化</td><td>证明指标能<strong>指导调参</strong>，不只是事后打分</td></tr>
+<tr><td>E5</td><td>BOT 验证</td><td>每格跑 200 局，算解析 $D$ 与实测通关率的相关性</td><td>解析简化是否可接受<br><span class="small">判据：相关系数 $r\geq0.7$</span></td></tr>
+</table>
+<div class="cap">表 10-1　实验设计</div>
+
+<div class="box warn">
+<p style="margin:0"><strong>E4 的选题要小心。</strong>扫 $\beta$ 有效（能出好图、有反直觉结论）；但<strong>扫层间耦合权 $\omega$ 无效</strong>——实测 $\omega$ 从 0.1 到 8.0，名次一动不动。<strong>不要把 $\omega$ 敏感度做成实验，会被问"所以呢？"。</strong></p>
+</div>
+
+<h3>10.3 没有真人试玩怎么办：BOT 数据从哪来</h3>
+
+<p>你只有一个 Demo、没有玩家群体，这是现实约束。三条可行路线（<strong>按推荐度排序</strong>）：</p>
+
+<table>
+<tr><th style="width:16%">路线</th><th style="width:34%">做法</th><th>成本与产出</th></tr>
+<tr>
+<td><strong>① BOT 自动模拟</strong><span class="tag g">主推</span></td>
+<td>写一个脚本策略 AI：固定的走位规则（保持射程、躲避冲锋）+ 固定的开火规则（CD 好了就打）。每个（Build, 层）格子跑 200 局</td>
+<td>成本：几百行脚本。<br>产出：通关率、实际 TTK、伤害分布 → <strong>支撑 ANOVA 与 E5</strong></td>
+</tr>
+<tr>
+<td><strong>② 小样本真人校准</strong></td>
+<td>找 5~8 个同学，每人玩 3~4 个 Build，记录主观难度评分（1~5 分）与通关情况</td>
+<td>成本：一次下午。<br>产出：<strong>主观难度 vs 解析 $D$ 的相关性</strong>——这是最有说服力的一张图</td>
+</tr>
+<tr>
+<td><strong>③ 纯解析 + 蒙特卡洛</strong></td>
+<td>不写 BOT，直接在解析模型上跑蒙特卡洛：把伤害随机系数 0.7~1.3、暴击率作为随机变量，采样 1000 次</td>
+<td>成本：最低。<br>产出：只支撑"随机性检验"，<strong>不能</strong>替代 BOT（走位、散布都没建模）</td>
+</tr>
+</table>
+<div class="cap">表 10-2　无真人试玩时的三条数据路线</div>
+
+<div class="box good">
+<p style="margin:0"><strong>最优组合：① + ②。</strong>BOT 提供大样本（支撑统计显著性），5~8 人的小样本提供<em>生态效度</em>（证明你的 $D$ 与人类体感一致）。论文里明确写"受限于样本规模，本研究以 BOT 数据为主、$N=8$ 的人类小样本为辅"，<strong>主动交代局限反而加分</strong>。</p>
+</div>
+
+<h3>10.4 结果评估的三个层次</h3>
+
+<ol>
+<li><strong>指标层</strong>：五个指标是否全部达标（表 8-2 的目标列）。</li>
+<li><strong>统计层</strong>：BOT 数据的 ANOVA $F$ 检验是否显著；随机基线对照是否占优。</li>
+<li><strong>解释层</strong>：<em>能否说清"为什么改这个数、改多少、改完为什么好"。</em>这一层最容易被忽略，却是答辩时区分"跑了个程序"和"做了研究"的关键。</li>
+</ol>
+
+<h2 id="c11">第 11 章　现有研究与参考文献清单</h2>
+
+<h3>11.1 工业界四条路线</h3>
+
+<table>
+<tr><th style="width:16%">路线</th><th style="width:34%">做法</th><th>你能抄什么</th></tr>
+<tr>
+<td><strong>Riot 阈值带</strong></td>
+<td>把玩家分四档（普通 / 中端 / 高端 / 职业），每档设<strong>胜率 + 禁用率双指标</strong>的阈值带；判定规则<strong>不对称</strong>（过强立刻削，过弱慢慢补）；另设 meta diversity targets（玩法多样性目标）</td>
+<td><span class="tag g">最值得抄</span> 分层难度带 + 双指标 + 判定不对称，直接对应你的 $P_{band}$ 与 $\mathrm{CV}_{lat}$ + $\sigma_{traj}$ 双指标结构</td>
+</tr>
+<tr>
+<td><strong>Valve AI Director</strong></td>
+<td>以"紧张度"为状态量，动态控制刷怪与资源投放（Left 4 Dead）</td>
+<td>思路可借鉴，但它是<strong>运行时动态</strong>调整，你做的是<strong>设计时静态</strong>调参，两者场景不同，引用时要点明</td>
+</tr>
+<tr>
+<td><strong>Elo / TrueSkill</strong></td>
+<td>通过<em>匹配</em>而非<em>改数值</em>实现公平</td>
+<td><span class="tag r">PvE 失效</span> 你的游戏没有对手匹配。<strong>但它很有用</strong>——用来论证"匹配类方法在 PvE 场景失效，因此必须回到参数空间求解"，这是你问题定位的合法性来源</td>
+</tr>
+<tr>
+<td><strong>自动 Playtesting</strong></td>
+<td>用 AI 代理大量试玩，替代真人</td>
+<td>对应你的 BOT 验证（见 10.3）</td>
+</tr>
+</table>
+<div class="cap">表 11-1　工业界四条路线</div>
+
+<h3>11.2 学术界四条脉络</h3>
+
+<table>
+<tr><th style="width:14%">脉络</th><th style="width:30%">关心什么</th><th style="width:26%">代表工作</th><th>与你的关系</th></tr>
+<tr>
+<td><strong>优化派</strong></td>
+<td>把平衡写成最小化指标方差的优化问题</td>
+<td>Wang &amp; Zhang 2021；Beau &amp; Bakkes 2016</td>
+<td><span class="tag g">直接依据</span> 你的 $\mathrm{CV}_{lat}$ 与 $\sigma_{traj}$ 是这条路的延续</td>
+</tr>
+<tr>
+<td><strong>博弈派</strong></td>
+<td>在策略响应图上求均衡或平稳分布</td>
+<td>α-rank（Sci. Rep. 2019）；Metagame Autobalancing（CoG 2020）；Lin et al.（TMLR 2024）</td>
+<td><span class="tag g">合法性来源</span> PageRank 类方法的理论依据；<strong>"单指标不够"这一论断的顶刊依据</strong></td>
+</tr>
+<tr>
+<td><strong>曲线派</strong></td>
+<td>难度曲线怎么设计、怎么动态调整</td>
+<td>Crawford 1982；Hunicke &amp; Chapman 2004；DCGM 2022；Víteková 2026</td>
+<td><span class="tag g">概念来源</span> 单调递增曲线的鼻祖；$D=T_{kill}/T_{surv}$ 与 DCGM 同型</td>
+</tr>
+<tr>
+<td><strong>结构派</strong></td>
+<td>用图 / 多层网络描述游戏元素关系</td>
+<td>GEEvo（CEC 2024）；Rupp et al.（IEEE TG 2024）；Kivelä 2014；De Domenico 2015</td>
+<td><span class="tag g">方法核心</span> 多层异质图与超邻接矩阵的术语体系全部来自这里</td>
+</tr>
+</table>
+<div class="cap">表 11-2　学术界四条脉络</div>
+
+<h3>11.3 研究空白与定位句</h3>
+
+<div class="box key">
+<p style="margin:0 0 8px"><strong>空白在哪</strong>：</p>
+<ul style="margin:0 0 8px">
+<li>DDA 文献做的是"<strong>给每一个玩家定制一条曲线</strong>"（纵向：同一玩家跨时间）；</li>
+<li>优化派与博弈派做的是"<strong>同一时刻各策略强度是否相等</strong>"（横向：同一层内的公平性）；</li>
+<li><strong>没有人做"让多个 Build 的难度曲线彼此平行"</strong>（横向 × 纵向的耦合）。</li>
+</ul>
+<p style="margin:0"><strong>可直接抄的定位句</strong>：既有工作分别在<em>同一时刻</em>考察策略强度差异、或在<em>跨时间</em>维度上为单个玩家调整难度，尚无从"多个 Build 的难度曲线是否彼此平行"这一<strong>跨层 × 跨策略</strong>视角刻画平衡性的研究。本文提出难度曲线一致性指标 $\sigma_{traj}$ 以填补这一空白。</p>
+</div>
+
+<h3>11.4 已核实的参考文献清单</h3>
+
+<div class="box warn">
+<p style="margin:0"><strong>下列条目均已逐条回原文核对过作者、出版信息与摘要。</strong>请<strong>直接复制本清单</strong>，不要凭记忆或 AI 生成的结果改动。</p>
+</div>
+
+<h4>工业界方法</h4>
+<div class="ref">
+<ol>
+<li>Riot Games. <em>/dev: Balance Framework Update</em>. 官方开发博客（leagueoflegends.com）。<br><span class="small">四档玩家分组 + 胜率/禁用率双指标阈值带 + 判定规则不对称 + meta diversity targets。<strong>本文"分层难度带 + 双指标"设计的直接来源。</strong></span></li>
+<li>Booth, M. <em>The AI Systems of Left 4 Dead</em>. GDC 2009.<br><span class="small">AI Director：以"紧张度"状态量驱动刷怪与资源投放。</span></li>
+<li>Herbrich, R., Minka, T., Graepel, T. <em>TrueSkill™: A Bayesian Skill Rating System</em>. NIPS 2006.<br><span class="small">通过匹配而非改数值实现公平。<strong>用于论证：PvE 场景下匹配类方法失效，必须回到参数空间求解。</strong></span></li>
+</ol>
+</div>
+
+<h4>优化派（$\sigma$/CV 做平衡指标的直接依据）</h4>
+<div class="ref">
+<ol start="4">
+<li><strong>Wang, W. &amp; Zhang, R.</strong> <em>Improved Game Units Balancing in Game Design Through Combinatorial Optimization</em>. IEEE ICEBE 2021, pp. 64–69. DOI: 10.1109/ICEBE52470.2021.00022<br><span class="small"><strong>最关键的一篇</strong>。摘要原文："The 'balancing' of game units is interpreted as <strong>minimizing the standard deviations of the assessment metrics</strong>, and the evolutionary algorithm such as NSGA-II is used to find the optimization solutions."<br><em class="small">著录提示：IEEE 与多数索引库<strong>仅给出缩写 W. 与 R.，未公开全名</strong>。BibTeX 中务必保留缩写，切勿自行补全名字，否则属于伪造著录。</em></span></li>
+<li>Beau, P. &amp; Bakkes, S. <em>Automated Game Balancing of Asymmetric Video Games</em>. IEEE CIG 2016. DOI: 10.1109/CIG.2016.7860432<br><span class="small">蒙特卡洛模拟 + 迭代调参，能"识别失衡的主成分"——<strong>你的方差分解定位法的先例</strong>。</span></li>
+<li>Önal, E. &amp; Bülbül, A. <em>Computational Game Unit Balancing based on Game Theory</em>. Journal of Universal Computer Science (JUCS).<br><span class="small">指出"用优化做数值调参的研究很少"——可用于证明方向冷门。<em>注意作者首字母是 E. 与 A.，不要写成 S. 与 K.</em></span></li>
+</ol>
+</div>
+
+<h4>博弈派（PageRank 类方法的合法性来源）</h4>
+<div class="ref">
+<ol start="7">
+<li>Omidshafiei, S. et al. <em>α-rank: Multi-Agent Evaluation by Evolution</em>. Scientific Reports 9:6654, 2019（arXiv:1903.01373）.<br><span class="small">在响应图上求马尔可夫平稳分布（本质即 PageRank）做策略评估。<strong>顶刊级理论依据</strong>。</span></li>
+<li><strong>Pfau, J., Liapis, A., Volkmar, G., Yannakakis, G. N. &amp; Malaka, R.</strong> <em>Dungeons &amp; Replicants: Automated Game Balancing via Deep Player Behavior Modeling</em>. IEEE CoG 2020, pp. 431–438. DOI: 10.1109/CoG47356.2020.9231958<br><span class="small">用深度玩家行为模型替代真人试玩，在<strong>多个难度维度</strong>上自动平衡。</span></li>
+<li><strong>Hernandez, D., Gbadamosi, C. T. T., Goodman, J. &amp; Walker, J. A.</strong> <em>Metagame Autobalancing for Competitive Multiplayer Games</em>. IEEE CoG 2020, pp. 275–282. DOI: 10.1109/CoG47356.2020.9231762（arXiv:2006.04419）<br><span class="small">让策划画一张"平衡目标图"，用<em>基于模拟的优化</em>最小化与该图的距离。方法论上最直接的先驱。<strong>注意：不要把本条与上一条 Pfau et al. 混为一谈，两者是不同作者、不同方法的独立文献。</strong></span></li>
+<li><strong>Lin, C.-C., Shih, Y.-W., Kuo, K.-T., Chen, Y.-C., Chen, C.-H., Chiu, W.-C. &amp; Wu, I.-C.</strong> <em>Identifying and Clustering Counter Relationships of Team Compositions in PvP Games for Efficient Balance Analysis</em>. TMLR 2024（arXiv:2408.17180）.<br><span class="small">超越胜率的度量（Top-D Diversity / Top-B Balance）——<strong>"单指标不够"这一论断的顶刊依据</strong>。<em>第一作者为 Chiu-Chou Lin。</em></span></li>
+</ol>
+</div>
+
+<h4>曲线派（难度曲线与 DDA）</h4>
+<div class="ref">
+<ol start="10">
+<li>Crawford, C. <em>The Art of Computer Game Design</em>. 1982.<br><span class="small">最早提出 positive monotonic curve。<strong>"逐层递增"约束的鼻祖</strong>。</span></li>
+<li>Hunicke, R. &amp; Chapman, V. <em>The Case for Dynamic Difficulty Adjustment in Games</em>. AIIDE 2004.<br><span class="small">DDA 开创性工作，challenge function 概念。</span></li>
+<li><strong>Corrêa, S. M., dos Santos, P. R., Cerqueira, B. B., Mossmann, J. B. &amp; Barbosa, D. N. F.</strong> <em>Model for Automatic Generation of Difficulty Curves in Digital Games</em>. IEEE Latin America Trans. 20(9):2123–2130, 2022. DOI: 10.1109/TLA.2022.9878167<br><span class="small">DCGM：把难度建模为<em>难度 vs 玩家表现的比值</em>——你的 $D=T_{kill}/T_{surv}$ 是同型构造。<em>第一作者为 Saulo M. Corrêa。</em></span></li>
+<li><strong>Becker, A. &amp; Görlich, D.</strong> <em>What is Game Balancing? – An Examination of Concepts</em>. ParadigmPlus 1(1):22–41, 2020. DOI: 10.55969/paradigmplus.v1n1a2<br><span class="small">平衡概念分类学（难度 / 有意义选择 / 对称性）。<strong>写"平衡的定义"必引</strong>。<em>第一作者全名 Alexander Becker。</em></span></li>
+<li>Víteková, L., Eichhorn, C., Pirker, J., Plecher, D. <em>Dynamic Difficulty Adjustment in Serious Games: A Literature Review</em>. Information 17(1):96, 2026. DOI: 10.3390/info17010096<br><span class="small">最新系统性综述（75 篇），方法分类为 rule-based / player modeling / ML 三类。用于综述章节。</span></li>
+</ol>
+</div>
+
+<h4>结构派（图与网络方法）</h4>
+<div class="ref">
+<ol start="15">
+<li>Rupp, F., Eberhardinger, M., Eckert, K. <em>Simulation-Driven Balancing of Competitive Game Levels with Reinforcement Learning</em>. IEEE Transactions on Games 16(4):903–913, 2024. DOI: 10.1109/TG.2024.3399536（arXiv:2503.18748）<br><span class="small">PCGRL 框架 + 模拟驱动平衡；"通过分析 agent 的 swap 行为反推哪类 tile 影响最大"与你的<strong>方差分解定位</strong>思想同源。<strong>本清单中分量最硬的一条（IEEE 汇刊正刊）。</strong></span></li>
+<li><strong>Rupp, F. &amp; Eckert, K.</strong> <em>GEEvo: Game Economy Generation and Balancing with Evolutionary Algorithms</em>. IEEE CEC 2024, pp. 1–8（arXiv:2404.18574）.<br><span class="small">图建模游戏经济 + 进化算法平衡，节点带类型、边带资源流转语义——<strong>与你的多层异质图同构度最高的一篇</strong>。</span></li>
+<li>Kivelä, M. et al. <em>Multilayer networks</em>. J. Complex Networks 2(3):203–271, 2014.<br><span class="small">多层网络奠基综述，<strong>术语体系（层、层内边、层间边、supra-adjacency）的来源</strong>。</span></li>
+<li>Boccaletti, S. et al. <em>The structure and dynamics of multilayer networks</em>. Physics Reports 544(1):1–122, 2014.<br><span class="small">超邻接矩阵的正式定义。</span></li>
+<li>De Domenico, M. et al. <em>Ranking in interconnected multilayer networks reveals versatile nodes</em>. Nature Communications 6:6868, 2015.<br><span class="small">跨层中心性 versatility 的出处。<strong>措辞提醒</strong>：原文的 versatility 基于 supra-adjacency 上 PageRank 跨层分布的不均衡度量；本文脚本里的实现（$1-\mathrm{std}/\mathrm{mean}$）是<strong>简化改编</strong>，论文中应写"<em>受 De Domenico et al. 启发，本文定义跨层均衡度…</em>"，<strong>不要写"采用其 versatility 指标"</strong>。</span></li>
+<li>Mucha, P. et al. <em>Community structure in time-dependent, multiscale, and multiplex networks</em>. Science 328(5980):876–878, 2010.<br><span class="small">多层模块度；若要度量"玩法多样性"可用。</span></li>
+</ol>
+</div>
+
+<h4>地牢 PCG（相关工作章节用，用于界定边界）</h4>
+<div class="ref">
+<ol start="21">
+<li>van der Linden, R., Lopes, R. &amp; Bidarra, R. <em>Procedural Generation of Dungeons</em>. IEEE Transactions on Computational Intelligence and AI in Games 6(1):78–89, 2014. DOI: 10.1109/TCIAIG.2013.2290371<br><span class="small">地牢 PCG 的标准综述（汇刊正刊）。<strong>比 SBGames 2019 那篇更权威，优先用这条。</strong></span></li>
+<li>Sfikas, K., Liapis, A. &amp; Yannakakis, G. N. <em>A General-Purpose Expressive Algorithm for Room-Based Environments</em>. FDG 2022. DOI: 10.1145/3555858.3563262<br><span class="small">FI-MAP-Elites 生成房间布局。<strong>注意：只做几何布局，不含怪物/道具数值</strong>，引用时不要说它做数值平衡。</span></li>
+<li>Liapis, A. <em>Multi-segment Evolution of Dungeon Game Levels</em>. GECCO 2017, pp. 203–210.<br><span class="small"><em>multi-segment</em> 指<strong>同一张地图内部的空间分段</strong>，不是多楼层。fitness 是探险/安全/资源三个空间属性。DOI 来源有冲突（3071178.3071179 vs .3071180），投稿前核对 ACM DL。</span></li>
+<li>Viana, B. M. F. &amp; dos Santos, S. R. <em>Illuminating the Space of Dungeon Maps, Locked-door Missions and Enemy Placement Through MAP-Elites</em>. arXiv:2202.09301, 2022.<br><span class="small">单层地牢（20 房间 / 4 钥匙 / 4 锁 / 30 敌人），描述符只有 leniency 与 exploration coefficient 两个。<strong>做了真实用户调研</strong>（玩家无法区分 AI 生成与人设计）——这一点值得借鉴。</span></li>
+</ol>
+</div>
+
+<h3>11.5 BibTeX（可直接复制）</h3>
+
+<pre><code>@inproceedings{wang2021balancing,
+  title     = {Improved Game Units Balancing in Game Design Through Combinatorial Optimization},
+  author    = {Wang, W. and Zhang, R.},
+  booktitle = {IEEE Intl. Conf. on e-Business Engineering (ICEBE)},
+  pages     = {64--69}, year = {2021},
+  doi       = {10.1109/ICEBE52470.2021.00022}
+}
+
+@inproceedings{beau2016automated,
+  title     = {Automated Game Balancing of Asymmetric Video Games},
+  author    = {Beau, P. and Bakkes, S.},
+  booktitle = {IEEE Conf. on Computational Intelligence and Games (CIG)},
+  year      = {2016}, doi = {10.1109/CIG.2016.7860432}
+}
+
+@article{onal2022gameunit,
+  title   = {Computational Game Unit Balancing based on Game Theory},
+  author  = {{\"O}nal, E. and B{\"u}lb{\"u}l, A.},
+  journal = {Journal of Universal Computer Science}, year = {2022}
+}
+
+@article{omidshafiei2019alpharank,
+  title   = {$\alpha$-rank: Multi-Agent Evaluation by Evolution},
+  author  = {Omidshafiei, Shayegan and others},
+  journal = {Scientific Reports}, volume = {9}, pages = {6654}, year = {2019}
+}
+
+@inproceedings{pfau2020dungeons,
+  title     = {Dungeons {\&} Replicants: Automated Game Balancing via Deep Player Behavior Modeling},
+  author    = {Pfau, Johannes and Liapis, Antonios and Volkmar, Georg
+               and Yannakakis, Georgios N. and Malaka, Rainer},
+  booktitle = {IEEE Conference on Games (CoG)}, pages = {431--438}, year = {2020},
+  doi       = {10.1109/CoG47356.2020.9231958}
+}
+
+@inproceedings{hernandez2020metagame,
+  title     = {Metagame Autobalancing for Competitive Multiplayer Games},
+  author    = {Hernandez, Daniel and Gbadamosi, C. T. T. and Goodman, James
+               and Walker, Julian A.},
+  booktitle = {IEEE Conference on Games (CoG)}, pages = {275--282}, year = {2020},
+  doi       = {10.1109/CoG47356.2020.9231762}
+}
+
+@article{lin2024counter,
+  title   = {Identifying and Clustering Counter Relationships of Team Compositions
+             in PvP Games for Efficient Balance Analysis},
+  author  = {Lin, Chiu-Chou and Shih, Yi-Wei and Kuo, Kuan-Ting and Chen, Yu-Cheng
+             and Chen, Chun-Hung and Chiu, Wei-Chen and Wu, I-Chen},
+  journal = {Transactions on Machine Learning Research}, year = {2024}
+}
+
+@article{correa2022dcgm,
+  title   = {Model for Automatic Generation of Difficulty Curves in Digital Games},
+  author  = {Corr{\^e}a, Saulo M. and dos Santos, Paulo R. and Cerqueira, Bruno B.
+             and Mossmann, J{\'u}lio B. and Barbosa, Diana N. F.},
+  journal = {IEEE Latin America Transactions}, volume = {20}, number = {9},
+  pages   = {2123--2130}, year = {2022}, doi = {10.1109/TLA.2022.9878167}
+}
+
+@article{becker2020balancing,
+  title   = {What is Game Balancing? -- An Examination of Concepts},
+  author  = {Becker, Alexander and G{\"o}rlich, Daniel},
+  journal = {ParadigmPlus}, volume = {1}, number = {1},
+  pages   = {22--41}, year = {2020}, doi = {10.55969/paradigmplus.v1n1a2}
+}
+
+@article{vitekova2026dda,
+  title   = {Dynamic Difficulty Adjustment in Serious Games: A Literature Review},
+  author  = {V{\'i}tekov{\'a}, Lucia and Eichhorn, Christian and Pirker, Johanna
+             and Plecher, David A.},
+  journal = {Information}, volume = {17}, number = {1}, pages = {96}, year = {2026},
+  doi     = {10.3390/info17010096}
+}
+
+@article{rupp2024simulation,
+  title   = {Simulation-Driven Balancing of Competitive Game Levels with Reinforcement Learning},
+  author  = {Rupp, Florian and Eberhardinger, Markus and Eckert, Kay},
+  journal = {IEEE Transactions on Games}, volume = {16}, number = {4},
+  pages   = {903--913}, year = {2024}, doi = {10.1109/TG.2024.3399536}
+}
+
+@inproceedings{rupp2024geevo,
+  title     = {GEEvo: Game Economy Generation and Balancing with Evolutionary Algorithms},
+  author    = {Rupp, Florian and Eckert, Kay},
+  booktitle = {IEEE Congress on Evolutionary Computation (CEC)},
+  pages     = {1--8}, year = {2024}
+}
+
+@article{kivela2014multilayer,
+  title   = {Multilayer networks},
+  author  = {Kivel{\"a}, Mikko and Arenas, Alex and Barthelemy, Marc and others},
+  journal = {Journal of Complex Networks}, volume = {2}, number = {3},
+  pages   = {203--271}, year = {2014}
+}
+
+@article{boccaletti2014structure,
+  title   = {The structure and dynamics of multilayer networks},
+  author  = {Boccaletti, Stefano and Bianconi, Ginestra and Criado, Regino and others},
+  journal = {Physics Reports}, volume = {544}, number = {1},
+  pages   = {1--122}, year = {2014}
+}
+
+@article{dedomenico2015ranking,
+  title   = {Ranking in interconnected multilayer networks reveals versatile nodes},
+  author  = {De Domenico, Manlio and Sol{\'e}-Ribalta, Albert and Omodei, Elisa
+             and G{\'o}mez, Sergio and Arenas, Alex},
+  journal = {Nature Communications}, volume = {6}, pages = {6868}, year = {2015}
+}
+
+@article{mucha2010community,
+  title   = {Community structure in time-dependent, multiscale, and multiplex networks},
+  author  = {Mucha, Peter J. and Richardson, Thomas and Macon, Kevin and others},
+  journal = {Science}, volume = {328}, number = {5980},
+  pages   = {876--878}, year = {2010}
+}
+
+@article{vanderlinden2014dungeons,
+  title   = {Procedural Generation of Dungeons},
+  author  = {van der Linden, Roland and Lopes, Ricardo and Bidarra, Rafael},
+  journal = {IEEE Transactions on Computational Intelligence and AI in Games},
+  volume  = {6}, number = {1}, pages = {78--89}, year = {2014},
+  doi     = {10.1109/TCIAIG.2013.2290371}
+}</code></pre>
+
+<h3>11.6 引用红线：这一节比文献清单更重要</h3>
+
+<div class="box warn">
+<p style="margin:0 0 8px"><strong>一、著录时最容易出错的六个地方（照本清单逐条核对）</strong></p>
+<table style="margin:0 0 8px">
+<tr><th style="width:26%">位置</th><th style="width:34%">错误版本</th><th>正确</th></tr>
+<tr><td>博弈派</td><td>Pfau, J. et al. <em>Deep Learning for Metagame Autobalancing</em>（arXiv:2006.04419）</td><td><strong>Pfau 与 Hernandez 不能混为一条</strong>。arXiv:2006.04419 实为 Hernandez et al. <em>Metagame Autobalancing…</em>（方法是 simulation-based optimization，<strong>不是深度学习</strong>）；Pfau 团队在 CoG 2020 上的真论文是 <em>Dungeons &amp; Replicants</em>，两者各自独立</td></tr>
+<tr><td>优化派</td><td>Wang, Xiaofeng &amp; Zhang, Yan</td><td><strong>名字系伪造</strong>。数据库只公开首字母，须写 <code>Wang, W. &amp; Zhang, R.</code>。<strong>自行补全全名属于伪造著录</strong></td></tr>
+<tr><td>博弈派</td><td>Lin, Zhenhui</td><td>实为 <strong>Chiu-Chou Lin</strong></td></tr>
+<tr><td>曲线派</td><td>Becker, Ashton</td><td>实为 <strong>Alexander Becker</strong></td></tr>
+<tr><td>曲线派</td><td>Corrêa, C. G.</td><td>实为 <strong>Saulo M. Corrêa</strong></td></tr>
+<tr><td>结构派</td><td>GEEvo 缺作者；Önal 首字母 S./K.</td><td>补 <strong>Rupp, F. &amp; Eckert, K.</strong>、pp. 1–8；Önal/Bülbül 为 <strong>E./A.</strong></td></tr>
+</table>
+<p style="margin:0"><strong>教训</strong>：AI 生成的文献列表，<strong>作者名与标题的拼接经常出错</strong>，但 DOI 通常是对的。<strong>用 DOI 反查原文核对，不要相信拼接出来的著录。</strong></p>
+</div>
+
+<div class="box warn">
+<p style="margin:0 0 8px"><strong>二、不可引用的条目</strong></p>
+<table style="margin:0 0 8px">
+<tr><th style="width:30%">条目</th><th>为什么不能引</th></tr>
+<tr><td>Hacking NetHack（Stanford CS230 2021）</td><td><strong>课程项目报告</strong>，未经同行评审。且它自述"high variability across trials <em>prevented us from reaching conclusive results</em>"——没得出确定结论。标题里的 Multi-Objective 指 <strong>MORL（多个奖励信号）</strong>，不是游戏数值多目标优化</td></tr>
+<tr><td>Generative AI in PCG for Computer Games（TechRxiv 2025）</td><td><strong>单作者预印本</strong>，非顶会顶刊</td></tr>
+<tr><td>任何"用 AI 搜到但查不到 DOI/出版信息"的条目</td><td>一律不引。本科毕设的文献数量在 20~30 篇即可，<strong>质量远比数量重要</strong></td></tr>
+</table>
+</div>
+
+<div class="box key">
+<p style="margin:0 0 8px"><strong>三、AI 文献搜索的系统性误读模式（务必理解）</strong></p>
+<p style="margin:0 0 6px">用 AI 联网搜索"多层网络 + 地牢 + 数值优化"时，AI 会把所有带 <code>layer / level / multi / hierarchical / segment / partitioned</code> 的词都归并成"多层网络"。对照表：</p>
+<table style="margin:0 0 8px">
+<tr><th style="width:26%">原文用词</th><th style="width:30%">AI 的理解</th><th>真实含义</th></tr>
+<tr><td>multi-segment</td><td>多楼层</td><td>同一张地图内的空间分段</td></tr>
+<tr><td>partitioned A3C</td><td>分层结构</td><td>按情境分成多个<em>并行</em>子网络（multi-task）</td></tr>
+<tr><td>multi-layer perceptron</td><td>多层网络建模结构</td><td>神经网络的隐藏层（函数逼近器）</td></tr>
+<tr><td>multi-objective (RL)</td><td>游戏数值多目标优化</td><td>MORL：多个奖励信号</td></tr>
+<tr><td>hierarchy of behaviours</td><td>多层地牢层级</td><td>行为层级（自己执行 or 委托下层）</td></tr>
+<tr><td>level（关卡）</td><td>floor（楼层）</td><td>一张完整地图</td></tr>
+</table>
+<p style="margin:0 0 6px"><strong>可操作规则</strong>：<em>用 AI 找候选池，但方法论描述必须逐条回原文核对作者、出版信息、摘要与自我声明的局限，只用原文确实写了的那句话。</em></p>
+<p style="margin:0"><strong>最极端的一个例子</strong>：AI 称某篇论文"分析楼层之间数值（怪物强度、玩家成长）的匹配问题"，而该论文原文白纸黑字写着"<em>fighting with monsters of increasing power… we are <strong>not</strong> addressing these aspects</em>"——它明确声明不做的，恰恰是 AI 说它做的。</p>
+</div>
+
+<div class="box good">
+<p style="margin:0 0 6px"><strong>四、"三个多层"的辨析（这一节可以直接搬进论文的文献综述）</strong></p>
+<table style="margin:0">
+<tr><th style="width:22%">说法</th><th style="width:30%">指什么</th><th>代表文献</th></tr>
+<tr><td>多层地牢</td><td><strong>游戏内容</strong>：地牢 1 层、2 层…</td><td>地牢 PCG 研究（Sfikas 2022 等）</td></tr>
+<tr><td>多层神经网络</td><td><strong>函数逼近器</strong>：MLP / CNN 的隐藏层</td><td>深度强化学习研究</td></tr>
+<tr><td>多层网络（multiplex）</td><td><strong>图论对象</strong>：同一组节点在不同层的副本 + 层间边</td><td>Kivelä 2014；De Domenico 2015</td></tr>
+</table>
+<p style="margin:6px 0 0"><strong>你用的是第三种。</strong>而现存地牢相关研究全是前两种——<strong>这反向印证了你的研究空白确实成立</strong>，但也意味着<strong>你没有横向基线可比较，必须靠自己做消融实验与随机基线</strong>（见 8.4）。</p>
+</div>
+
+<h2 id="c12">第 12 章　论文写作、创新点提炼与答辩</h2>
+
+<h3>12.1 论文章节安排</h3>
+
+<table>
+<tr><th style="width:8%">章</th><th style="width:26%">标题</th><th>内容要点与篇幅建议</th></tr>
+<tr><td>1</td><td>绪论</td><td>背景（Roguelike + 撤离类）、问题（数值平衡依赖人工试错）、本文工作、章节安排。<strong>约 3000 字</strong></td></tr>
+<tr><td>2</td><td>相关工作</td><td>四条脉络（优化派 / 博弈派 / 曲线派 / 结构派）+ 地牢 PCG。<strong>收尾必须点出研究空白</strong>（用 11.3 的定位句）。<strong>约 4000 字</strong></td></tr>
+<tr><td>3</td><td><strong>多层异质图建模</strong></td><td><strong>论文主体之一</strong>。MVS → 元件向量 → Build 生成 → 三类图结构 → 四类边 → 副本 vs 独立节点 → 超邻接矩阵（<span class="small">张量写法放进脚注即可，<strong>不要为它单独开一节——它不产生任何数字</strong></span>）。<strong>约 5000 字</strong></td></tr>
+<tr><td>4</td><td><strong>难度矩阵与评价指标</strong></td><td><strong>论文主体之二</strong>。TTK 解析模型 → $M$ → 五指标 → $\sigma_{traj}$ 构造四步 → 三重锚点 → 方差分解。<strong>约 5000 字</strong></td></tr>
+<tr><td>5</td><td>参数优化方法</td><td>$\theta$ 构成 → 目标函数 → 两阶段搜索 → 五步闭环。<strong>约 3000 字</strong></td></tr>
+<tr><td>6</td><td>实验与结果</td><td>五个实验（E1–E5）+ 门面图 + 消融 + 敏感度 + BOT 验证。<strong>约 5000 字</strong></td></tr>
+<tr><td>7</td><td>结论与展望</td><td>总结 + <strong>局限性（主动写）</strong> + 未来工作。<strong>约 2000 字</strong></td></tr>
+</table>
+<div class="cap">表 12-1　章节安排</div>
+
+<div class="box">
+<p style="margin:0"><strong>关于"游戏开发"部分放哪</strong>：不要单独占一章写"我怎么开发游戏的"。把它压成 3.1 节（约 2000 字）作为<strong>建模的数据来源说明</strong>，重点写"数值系统由 Config 类统一管理，所有数值集中在静态常量中，便于平衡调整"——<strong>这句话是你整套方法能落地的前提</strong>，比写 12000 行代码有价值得多。</p>
+</div>
+
+<h3>12.2 创新点三层</h3>
+
+<table>
+<tr><th style="width:16%">层次</th><th style="width:34%">内容</th><th>怎么写</th></tr>
+<tr>
+<td><strong>方法创新</strong><span class="tag g">最重要</span></td>
+<td>提出<strong>难度曲线一致性指标 $\sigma_{traj}$</strong>，刻画"多个 Build 的难度曲线是否彼此平行"</td>
+<td>强调两件事：① 水平 CV 无法刻画跨层发散（用表 8-1 的例子）；② 现有 DDA 研究做的是"单个玩家跨时间"，博弈派做的是"同一时刻"，<strong>跨层 × 跨策略的耦合是空白</strong></td>
+</tr>
+<tr>
+<td><strong>工程创新</strong></td>
+<td>完整可运行的游戏 Demo + 从 Config 到指标到优化结果的<strong>自动化管线</strong></td>
+<td>强调"数值集中在 Config 中"使得<strong>闭环自动调参成为可能</strong>——这不是每个研究都能做的，因为多数研究拿不到可修改的完整游戏</td>
+</tr>
+<tr>
+<td><strong>实践创新</strong></td>
+<td>诊断结论<strong>回填进 Config</strong>并复检</td>
+<td>给出具体数字：护甲公式改百分比后 $\sigma_{traj}$ 从 0.3421 降到 0.1046</td>
+</tr>
+</table>
+<div class="cap">表 12-2　创新点三层</div>
+
+<h3>12.3 答辩高频问题与答法</h3>
+
+<table>
+<tr><th style="width:26%">问题</th><th>怎么答</th></tr>
+<tr>
+<td><strong>"$\sigma_{traj}&lt;0.10$ 这个阈值哪来的？"</strong></td>
+<td>三重锚点（8.4）：① 对数单位的绝对解释（<10% 增速差）；② <strong>随机基线：±20% 扰动跑 100 次，取 25 分位数</strong>；③ ANOVA 显著性检验。<strong>第 ② 条是主答</strong></td>
+</tr>
+<tr>
+<td><strong>"图论起了什么不可替代的作用？"</strong></td>
+<td>三件事，缺一不可：① <strong>Build 集由图规则生成</strong>（冲突边剔除），不是手工列举；② <strong>枢纽识别靠中心性</strong>（发现轻甲 2.110 是影响面最大的元件）；③ <strong>偏科检测靠跨层一致性</strong>（B7 的 $\tau=0.714&lt;0.8$，检出强弱反转）——后两者是扁平表格给不出的</td>
+</tr>
+<tr>
+<td><strong>"没有真人试玩怎么验证？"</strong></td>
+<td>主动承认局限，然后给三层证据：① BOT 200 局/格的统计显著性；② 解析 $D$ 与实测通关率的相关性 $r\geq0.7$；③ $N=8$ 的人类小样本主观评分相关性。<strong>主动交代比回避有力</strong></td>
+</tr>
+<tr>
+<td><strong>"你这个数怎么算出来的？"</strong></td>
+<td><strong>当场手算</strong>。从 ATK → DPS → $T_{kill}$ → $T_{surv}$ → $D$，四步推完（用 7.5 的算例）。<strong>这是你的最强项，务必练熟</strong></td>
+</tr>
+<tr>
+<td><strong>"三个脚本的指标口径不一致？"</strong></td>
+<td>不要等老师问。<strong>主动在论文里写清楚</strong>（见 8.6 的警告框），说明三种口径的差别、为什么统一到正文定义、以及在附录给出不同口径的稳健性检验</td>
+</tr>
+<tr>
+<td><strong>"工作量够不够？"</strong></td>
+<td>不要报代码行数。<strong>说三个数</strong>：建模覆盖了多少个合法 Build × 4 层；指标跑了多少组参数组合；优化后 $\sigma_{traj}$ 改善了多少</td>
+</tr>
+</table>
+<div class="cap">表 12-3　答辩高频问题</div>
+
+<h3>12.4 局限性：主动写，反而加分</h3>
+
+<p>建议原文写这五条，每条都对应"未来工作"里的一条，形成呼应：</p>
+
+<ol>
+<li><strong>TTK 解析模型的四个盲区</strong>：不含走位与散布、假设多怪同步输出、Boss 分阶段需单独建模、药水时序算不细。→ 未来：BOT 从脚本策略升级为近似人类策略（行为克隆）。</li>
+<li><strong>矩阵只覆盖固定 Build 集</strong>，玩家自由组合的 Build 不在 $M$ 中。→ 未来：主测集（固定 $n\times4$）+ 扩展集（BOT 实时模拟 + 动态拼接 $(n+N)\times4$）。</li>
+<li><strong>$\sigma_{traj}=0$ 的退化风险</strong>：完全一致会让选择失去意义。→ 未来：把"有意义选择"也做成约束项（呼应 Becker &amp; Görlich 的概念分类与 Riot 的 meta diversity targets）。</li>
+<li><strong>多层网络的 $\omega$ 不改变排名</strong>（实测 $\tau\equiv1.000$）。→ 主动说明，不要包装成贡献。</li>
+<li><strong>缺少大规模真人验证</strong>。→ 未来：扩大人类样本。</li>
+</ol>
+
+<h2 id="c13">第 13 章　你现在要做什么：任务清单与时间表</h2>
+
+<h3>13.1 硬前置：四个缺失的数值</h3>
+
+<div class="box warn">
+<p style="margin:0"><strong>没有这四个数，TTK 解析模型跑不起来，$M$ 矩阵就是空的。这是整条链路的第一道关卡，必须最先解决。</strong></p>
+</div>
+
+<table>
+<tr><th style="width:24%">缺失项</th><th style="width:30%">为什么必须</th><th>怎么补</th></tr>
+<tr><td><strong>枪械基础伤害</strong><br><span class="small">（Pistol / Burst Sniper）</span></td><td>算 $\mathrm{DPS}_{玩家}$ 的分子</td><td>直接从 Config 读；若 Config 里写死在代码中，抽出来</td></tr>
+<tr><td><strong>三档子弹伤害</strong><br><span class="small">（白 / 蓝 / 红）</span></td><td>伤害公式 $(枪伤害+子弹伤害)\times 随机\times 暴击$，武器与子弹是两个独立变量</td><td>从 Config 读；若还没定，<strong>按心流通道反推</strong>（见下）</td></tr>
+<tr><td><strong>Boss 攻击力 / DPS</strong></td><td>Boss 层的 $T_{surv}$ 算不出来</td><td>从 BossDirector 读；Boss 有冲撞 / 毒圈 / 召唤三技能，需分别给 DPS 再按 2 秒间隔合成</td></tr>
+<tr><td><strong>暴击概率</strong></td><td>开题报告只给了暴击<em>倍率</em> 1.5，没给<em>概率</em>。期望 DPS 需要它</td><td>从 Config 读；若无，先设 0（保守下界），并在论文中注明</td></tr>
+</table>
+<div class="cap">表 13-1　四个缺失数值</div>
+
+<div class="box">
+<p style="margin:0"><strong>若某个数值还没定，可以按心流通道反推。</strong>做法：先设定目标——希望玩家用标准 Build 在第 1 层打到 $D\approx0.5$。已知怪物 HP 与 DPS，反解出所需的 $\mathrm{DPS}_{玩家}$，再除以已知的其他系数得到该数值的合理取值。<strong>这是一种"从体验目标倒推数值"的正向设计方法</strong>，写在论文里比"我随便设的"好得多。</p>
+</div>
+
+<h3>13.2 已知必改项</h3>
+
+<table>
+<tr><th style="width:8%">优先级</th><th style="width:30%">改什么</th><th>理由与做法</th></tr>
+<tr><td class="c"><span class="tag r">P0</span></td><td><strong>护甲公式改百分比减伤</strong></td><td>固定减法下护甲 50 让 7/8 种怪只造成 1 点伤害（7.5 算例 1）。改为 $dmg\times(1-armor/(armor+K))$，$K=50$</td></tr>
+<tr><td class="c"><span class="tag r">P0</span></td><td><strong>统一精英缩放</strong></td><td>现为 HP ×2.75~3.00、ATK ×1.50~2.08，四种怪不一致（7.4 算例 3）。统一为 <strong>×3 HP / ×2 ATK</strong>，冷却 1.0→0.8</td></tr>
+<tr><td class="c"><span class="tag a">P1</span></td><td><strong>统一 $\sigma_{traj}$ 口径</strong></td><td>三个脚本三种定义（8.6）。改 <code>minimal_balance_model.py</code> 第 159 行</td></tr>
+<tr><td class="c"><span class="tag a">P1</span></td><td><strong>确认地牢层数口径</strong></td><td>开题报告 5.8 写"3 层"，第二部分写"4 个场景"。确认遭遇切片是 3 片还是 4 片</td></tr>
+<tr><td class="c"><span class="tag">P2</span></td><td><strong>给三把武器加机制差异</strong></td><td>实测 B1/B4/B6 相似度 = 1.00000，只有数值差无机制差——这是"冗余选项"，说明武器设计本身需要改</td></tr>
+</table>
+<div class="cap">表 13-2　必改项</div>
+
+<h3>13.3 六周时间表（从补齐数值算起）</h3>
+
+<table>
+<tr><th style="width:12%">周次</th><th style="width:30%">任务</th><th>产出</th></tr>
+<tr><td>第 1 周</td><td>补齐四个缺失数值 + 改护甲公式 + 统一精英缩放</td><td>一份完整无缺口的 Config 数值表</td></tr>
+<tr><td>第 2 周</td><td>用真实数值重建 $A$ 与 $M$；跑通五指标</td><td>E1 基线诊断的全部数字 + 表 8-5 的更新版</td></tr>
+<tr><td>第 3 周</td><td>写 BOT 脚本；每格跑 200 局；做 ANOVA 与随机基线</td><td>E5 验证数据 + 阈值三重锚点</td></tr>
+<tr><td>第 4 周</td><td>两阶段搜索求 $\theta^\*$；回填 Config；复检</td><td>E2 门面图（改前发散 / 改后平行）+ E3 消融 + E4 敏感度</td></tr>
+<tr><td>第 5 周</td><td>写论文第 3、4 章（建模与指标）</td><td>论文主体</td></tr>
+<tr><td>第 6 周</td><td>写第 1、2、5、6、7 章；整理图表；准备答辩</td><td>完整论文 + 答辩 PPT</td></tr>
+</table>
+<div class="cap">表 13-3　时间表</div>
+
+<h3>13.4 已有脚本清单</h3>
+
+<table>
+<tr><th style="width:26%">脚本</th><th style="width:30%">用途</th><th>状态</th></tr>
+<tr><td><code>minimal_balance_model.py</code></td><td>MVS 极简系统：6 Build × 2 场景，含图构建、PageRank、Fiedler 值、网格搜索</td><td>可运行；<strong>第 159 行口径待统一</strong></td></tr>
+<tr><td><code>bipartite_diagnosis.py</code></td><td>二部图诊断：支配关系、冗余检测、$\sigma_{traj}$</td><td>可运行；口径为 $\mathrm{std}(\ln G)$</td></tr>
+<tr><td><code>multiplex_balance.py</code></td><td>多层网络：层间边、跨层一致性、versatility</td><td>可运行；口径为正文推荐的 $\sigma_{traj}$</td></tr>
+</table>
+<div class="cap">表 13-4　脚本清单（均为纯标准库，无需安装 numpy / networkx）</div>
+
+<h2 id="c14">附录 A　术语大白话对照表</h2>
+
+<table>
+<tr><th style="width:20%">术语</th><th>大白话</th></tr>
+<tr><td><strong>Build</strong></td><td>玩家凑出来的装备 + 武器 + 药水组合，比如"高护甲硬血流"</td></tr>
+<tr><td><strong>DPS</strong></td><td>每秒伤害。把"打一下多疼"和"多久打一下"合成一个数</td></tr>
+<tr><td><strong>TTK</strong></td><td>打死对方要几秒</td></tr>
+<tr><td><strong>$T_{kill}$ / $T_{surv}$</strong></td><td>你打死怪要几秒 / 你能撑几秒</td></tr>
+<tr><td><strong>难度 $D$</strong></td><td>上面两个时间的比值。$D&lt;1$ 打得过，$D\approx1$ 五五开</td></tr>
+<tr><td><strong>心流通道</strong></td><td>难度落在 $[0.3,0.95]$ 的区间——紧张但打得过，体感最好</td></tr>
+<tr><td><strong>难度曲线</strong></td><td>一个 Build 从第 1 层到 Boss 层，难度逐层变化的折线</td></tr>
+<tr><td><strong>MVS</strong></td><td>最小可验证系统。故意做小，小到每个数都能手算复核</td></tr>
+<tr><td><strong>作用维度</strong></td><td>一件装备是"为了输出 / 为了活命 / 为了跑得快 / 为了技能转得快"中的哪一类</td></tr>
+<tr><td><strong>协同边</strong></td><td>两件装备服务于<em>不同</em>目的 → 搭配起来更强</td></tr>
+<tr><td><strong>冲突边</strong></td><td>两件装备在机制上互相浪费 → 这个组合无效</td></tr>
+<tr><td><strong>二部图</strong></td><td>两类节点、只有异侧边的图。本文里是"Build ↔ 怪"那一块</td></tr>
+<tr><td><strong>异质图</strong></td><td>多种类型节点、任意类型之间都能连边的图</td></tr>
+<tr><td><strong>多层网络</strong></td><td>在异质图基础上把节点按"层"切片，区分层内边与层间边</td></tr>
+<tr><td><strong>超邻接矩阵</strong></td><td>把多层结构拍平成一个大矩阵，方便直接跑算法</td></tr>
+<tr><td><strong>邻接张量</strong></td><td>同一件事的另一种写法，写论文时用，显得规范<br><span class="small"><strong>包装层</strong>：只影响表述，不产生任何数字</span></td></tr>
+<tr><td><strong>副本（replica）</strong></td><td>同一只怪在第 1 层和第 3 层的两个"分身"，本质是同一个 Config 条目</td></tr>
+<tr><td><strong>ordinal coupling</strong></td><td>只让相邻层之间连边的层间耦合方式</td></tr>
+<tr><td><strong>结构矩阵 $A$</strong></td><td>记录"谁跟谁有关、关系多强"的矩阵。是输入，不是优化对象</td></tr>
+<tr><td><strong>难度矩阵 $M$</strong></td><td>记录"每个 Build 在每层有多难"的矩阵。是输出，是优化对象</td></tr>
+<tr><td><strong>CV</strong></td><td>变异系数 = 标准差 ÷ 均值。用来衡量"差得有多开"，且不受整体尺度影响</td></tr>
+<tr><td><strong>$\sigma_{traj}$</strong></td><td>各 Build 难度<em>增长倍数</em>彼此差多少。你的创新指标</td></tr>
+<tr><td><strong>Kendall $\tau$</strong></td><td>两组排名有多一致。$1$ 完全一致，$-1$ 完全颠倒</td></tr>
+<tr><td><strong>ANOVA</strong></td><td>方差分析。判断"这些差异是真的还是随机抖出来的"</td></tr>
+<tr><td><strong>代数连通度 $\lambda_2$</strong></td><td>图有多连通。接近 0 说明存在孤立子系统</td></tr>
+<tr><td><strong>PageRank</strong></td><td>一种中心性算法。谁被引得多、被重要的邻居引，谁就重要</td></tr>
+<tr><td><strong>versatility</strong></td><td>跨层均衡度。一个节点在各层的重要性是否均衡</td></tr>
+<tr><td><strong>消融实验</strong></td><td>去掉你方法的一部分，看结果是否变差——用来证明那部分不可省</td></tr>
+<tr><td><strong>随机基线</strong></td><td>随手乱调数值能得到的水平。你的方案必须显著优于它</td></tr>
+</table>
+
+<h2 id="c15">附录 B　开题报告数值全表</h2>
+
+<h4>B.1 玩家基础数值（5.1）</h4>
+<table>
+<tr><th style="width:30%">项</th><th>值</th></tr>
+<tr><td>基础血量</td><td class="num">100</td></tr>
+<tr><td>伤害随机系数</td><td class="num">0.7 ~ 1.3</td></tr>
+<tr><td>暴击倍率</td><td class="num">1.5</td></tr>
+<tr><td>防御公式</td><td class="num">$\max(1,\ 伤害 - 0.5\times 护甲)$ <span class="tag r">待改</span></td></tr>
+</table>
+
+<h4>B.2 怪物数值表（5.3）</h4>
+<table>
+<tr><th style="width:14%">怪物类型</th><th style="width:12%">难度</th><th style="width:12%">血量</th><th style="width:12%">移速</th><th style="width:12%">攻击</th><th style="width:12%">冷却</th><th style="width:12%">击退抗性</th><th>DPS</th></tr>
+<tr><td rowspan="2">碰撞怪</td><td>普通</td><td class="num">30</td><td class="num">1.5</td><td class="num">8</td><td class="num">1.0</td><td class="num">0.2</td><td class="num">8.0</td></tr>
+<tr><td>精英</td><td class="num">90</td><td class="num">1.2</td><td class="num">15</td><td class="num">0.8</td><td class="num">0.5</td><td class="num">18.75</td></tr>
+<tr><td rowspan="2">冲锋怪</td><td>普通</td><td class="num">35</td><td class="num">2.5</td><td class="num">12</td><td class="num">1.0</td><td class="num">0.3</td><td class="num">12.0</td></tr>
+<tr><td>精英</td><td class="num">100</td><td class="num">3.0</td><td class="num">25</td><td class="num">0.8</td><td class="num">0.5</td><td class="num">31.25</td></tr>
+<tr><td rowspan="2">自爆怪</td><td>普通</td><td class="num">20</td><td class="num">2.0</td><td class="num">20</td><td class="num">1.0</td><td class="num">0.1</td><td class="num">20.0</td></tr>
+<tr><td>精英</td><td class="num">55</td><td class="num">2.5</td><td class="num">40</td><td class="num">0.8</td><td class="num">0.2</td><td class="num">50.0</td></tr>
+<tr><td rowspan="2">细胞怪</td><td>普通</td><td class="num">40</td><td class="num">1.0</td><td class="num">8</td><td class="num">1.0</td><td class="num">0.3</td><td class="num">8.0</td></tr>
+<tr><td>精英</td><td class="num">120</td><td class="num">0.9</td><td class="num">12</td><td class="num">0.8</td><td class="num">0.5</td><td class="num">15.0</td></tr>
+</table>
+
+<h4>B.3 Boss（5.4）</h4>
+<table>
+<tr><th style="width:34%">项</th><th>值</th></tr>
+<tr><td>最大血量</td><td class="num">500</td></tr>
+<tr><td>阶段二阈值</td><td class="num">50% 血量</td></tr>
+<tr><td>技能间隔</td><td class="num">2 秒</td></tr>
+<tr><td>阶段二移速</td><td class="num">×1.3</td></tr>
+<tr><td><strong>攻击力 / DPS</strong></td><td class="num"><span class="tag r">缺失，必须补</span></td></tr>
+</table>
+
+<h4>B.4 药水（5.5）</h4>
+<table>
+<tr><th style="width:16%">ID</th><th style="width:18%">名称</th><th style="width:12%">价格</th><th style="width:12%">持续</th><th>效果</th></tr>
+<tr><td>health_potion</td><td>Health Potion</td><td class="num">50</td><td class="num">即时</td><td>回血 20</td></tr>
+<tr><td>stimulant</td><td>Vitality</td><td class="num">350</td><td class="num">60 秒</td><td>血量 +30，体力 +50</td></tr>
+<tr><td>speed_potion</td><td>Acceleration</td><td class="num">100</td><td class="num">60 秒</td><td>移速 +20%</td></tr>
+<tr><td>cooldown_potion</td><td>Haste</td><td class="num">150</td><td class="num">60 秒</td><td>武器冷却 −20%</td></tr>
+</table>
+
+<h4>B.5 武器（5.6）</h4>
+<table>
+<tr><th style="width:20%">武器</th><th style="width:14%">伤害类型</th><th style="width:14%">散布</th><th style="width:20%">特性</th><th>备注</th></tr>
+<tr><td>空手 / 剑</td><td>近战</td><td class="num">—</td><td>近距离</td><td>基础攻击</td></tr>
+<tr><td>Pistol</td><td>远程</td><td class="num">±0.03</td><td>半自动</td><td>移动散布 ×3</td></tr>
+<tr><td>Burst Sniper</td><td>远程</td><td class="num">±0.02</td><td>开镜精准</td><td>无距离限制</td></tr>
+</table>
+<p class="small">伤害公式：$(\text{枪伤害}+\text{子弹伤害})\times \text{随机系数}\times \text{暴击}1.5$。子弹三档：普通（白）基础 / 钢制（蓝）提升 / 钛钢（红）最高。<strong>枪伤害与三档子弹伤害的具体数值缺失，必须补。</strong></p>
+
+<h4>B.6 装备（5.7）</h4>
+<table>
+<tr><th style="width:22%">ID</th><th style="width:12%">部位</th><th style="width:12%">护甲</th><th style="width:14%">移速惩罚</th><th>说明</th></tr>
+<tr><td>leather_gloves</td><td>手部</td><td class="num">0</td><td class="num">0%</td><td>皮手套，基础装备</td></tr>
+<tr><td>tactical_bracers</td><td>手部</td><td class="num">0</td><td class="num">0%</td><td>战术护腕</td></tr>
+<tr><td>safety_helmet</td><td>头部</td><td class="num">5</td><td class="num">0%</td><td>安全头盔</td></tr>
+<tr><td>tactical_helmet</td><td>头部</td><td class="num">15</td><td class="num">−1%</td><td>战术头盔</td></tr>
+<tr><td>light_vest</td><td>护甲</td><td class="num">10</td><td class="num">0%</td><td>轻型背心</td></tr>
+<tr><td>tactical_armor</td><td>护甲</td><td class="num"><strong>50</strong></td><td class="num">−2%</td><td>战术护甲<span class="tag r">支配性</span></td></tr>
+<tr><td>light_bag</td><td>背包</td><td class="num">0</td><td class="num">0%</td><td>轻量背包</td></tr>
+<tr><td>tactical_backpack</td><td>背包</td><td class="num">0</td><td class="num">−1%</td><td>战术背包</td></tr>
+</table>
+<p class="small">初始：基础护甲 0，初始金币 9000，护甲基础槽位 2 格。</p>
+
+<h2 id="c16">附录 C　常见错误清单（答辩前逐条自查）</h2>
+
+<div class="box warn">
+<p style="margin:0 0 8px"><strong>文献类</strong></p>
+<ol style="margin:0">
+<li>是否还在用"Pfau et al. <em>Deep Learning for Metagame Autobalancing</em>"这个不存在的条目？→ 已拆为 Pfau（<em>Dungeons &amp; Replicants</em>）与 Hernandez（<em>Metagame Autobalancing</em>）两条</li>
+<li>是否自行补全了 Wang &amp; Zhang 的全名？→ 必须是 <code>Wang, W. &amp; Zhang, R.</code></li>
+<li>是否引用了课程报告（CS230）或预印本（TechRxiv）？→ 删掉</li>
+<li>写 versatility 时是否写了"采用 De Domenico 的指标"？→ 必须写"<strong>受……启发，本文定义…</strong>"</li>
+<li>每条文献是否都用 DOI 反查核对过？</li>
+</ol>
+</div>
+
+<div class="box warn">
+<p style="margin:0 0 8px"><strong>方法类</strong></p>
+<ol style="margin:0">
+<li>三个脚本的 $\sigma_{traj}$ 口径是否已统一？→ 若未统一，论文里是否明确交代了？</li>
+<li>是否混用了 MVS 的示意数值与开题报告的真实数值？→ 每段数据是否标注了来源？</li>
+<li>层间边是否<strong>双向</strong>都建了？→ 只建去程会导致 $\tau\equiv1.000$</li>
+<li>超邻接矩阵是否把 4 个遭遇切片<strong>展开</strong>了？→ 压成一块就看不出深度维</li>
+<li>是否在论文里写清了"不同节点 vs 同一实体副本"的选择？</li>
+<li>是否把 $\omega$ 敏感度包装成了创新点？→ 实测不改变排名，<strong>不要这么做</strong></li>
+<li>余弦相似度判冗余时，是否加了"均值比落在 [0.8,1.25]"这个第二条件？</li>
+</ol>
+</div>
+
+<div class="box warn">
+<p style="margin:0 0 8px"><strong>数据类</strong></p>
+<ol style="margin:0">
+<li>四个缺失数值（枪伤害、三档子弹伤害、Boss 攻击、暴击概率）是否补齐？</li>
+<li>护甲公式是否已改为百分比减伤？</li>
+<li>精英缩放是否已统一为 ×3 HP / ×2 ATK？</li>
+<li>地牢层数口径（3 层 vs 4 场景）是否已确认？</li>
+<li>是否做了优化后的<strong>复检</strong>（重建图 → 重算 $M$ → 重跑指标）？</li>
+<li>随机基线（±20% 扰动 100 次）是否跑了？</li>
+</ol>
+</div>
+
+<div class="box good">
+<p style="margin:0 0 8px"><strong>表达类</strong></p>
+<ol style="margin:0">
+<li>是否在论文里明确说了"二部图 ⊂ 异质图 ⊂ 多层网络"是包含关系而非并列？</li>
+<li>是否解释了为什么不用最短路径与网络流？</li>
+<li>是否主动写了局限性？</li>
+<li>是否能当场手算 $D$ 的四步推导？</li>
+<li>是否说明"曲线要平行，不是要重合"？</li>
+</ol>
+</div>
+
+<hr>
+
+<div class="box key">
+<p style="margin:0 0 6px"><strong>最后再强调一遍最重要的一句话</strong>：</p>
+<p style="margin:0">你的工作不是"用图论分析了一下游戏数值"，而是<strong>提出了一个此前没人定义过的指标——难度曲线一致性 $\sigma_{traj}$——并用它诊断出了水平平衡指标诊断不出的问题</strong>。图论是承载这个指标的结构，游戏是验证它的数据来源。<strong>讲清楚这个主次关系，论文就立住了。</strong></p>
+</div>
+
+<div class="cap" style="margin-top:26px">本文档由讨论记录汇编整理 · 2026-09-15 · 文中所有数值均来自你的开题报告或已实现脚本的真实运行结果</div>
+
+</body>
+</html>

@@ -1,0 +1,29 @@
+﻿# Unity 缓存目录——每次打开 Unity 都重新生成，绝不能进仓库
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]serSettings/
+[Uu]serLocalSettings/
+
+# Unity 生成的临时文件
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.pidb
+*.booproj
+*.svd
+
+# LaTeX 编译产物（GameDesignDocumentation 的垃圾文件）
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.synctex(busy)
+*.fdb_latexmk
+*.fls

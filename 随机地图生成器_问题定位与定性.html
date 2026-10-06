@@ -1,0 +1,94 @@
+<html style="margin:0;padding:0;">
+<title>随机地图生成器 · 问题定位与定性</title>
+<style>
+  body{margin:0;padding:24px;background:#f7f8fa;font-family:"Microsoft YaHei",system-ui,sans-serif;color:#1f2329;}
+  h1{font-size:22px;margin:0 0 6px;}
+  .sub{color:#646a73;font-size:13px;margin-bottom:18px;}
+  h2{font-size:16px;margin:26px 0 12px;padding-left:10px;border-left:4px solid #d4380d;}
+  .pipeline{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;}
+  .step{background:#fff;border:1.5px solid #d9dce1;border-radius:8px;padding:10px 12px;min-width:120px;flex:1 1 130px;}
+  .step .n{font-size:12px;color:#646a73;}
+  .step .t{font-size:14px;font-weight:600;margin:4px 0;}
+  .step .d{font-size:12px;color:#4e5969;line-height:1.5;}
+  .step.bad{border-color:#d4380d;background:#fff2ef;}
+  .step .tag{display:inline-block;margin-top:6px;font-size:11px;padding:1px 8px;border-radius:10px;background:#d4380d;color:#fff;}
+  .arrow{align-self:center;font-size:18px;color:#86909c;}
+  .mis{background:#fff7e6;border:1.5px solid #fa8c16;border-radius:8px;padding:10px 14px;margin-top:14px;font-size:13px;color:#7a4f01;}
+  .mis b{color:#d4380d;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;}
+  .card{background:#fff;border:1.5px solid #e5e6eb;border-radius:10px;padding:12px 14px;}
+  .card h3{margin:0 0 8px;font-size:14px;}
+  .card .q{color:#1f2329;font-weight:600;}
+  .card .row{font-size:12.5px;margin:5px 0;line-height:1.55;}
+  .card .k{color:#86909c;display:inline-block;min-width:52px;}
+  .ok{color:#00b42a;font-weight:600;}
+  .fix{background:#e8ffea;border:1px solid #0ba95b;border-radius:6px;padding:6px 10px;font-size:12.5px;margin-top:8px;color:#0a7a3d;}
+  .nums{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;}
+  .num{flex:1 1 200px;background:#fff;border:1px solid #e5e6eb;border-radius:8px;padding:10px 12px;font-size:12.5px;}
+  .num .big{font-size:22px;font-weight:700;margin:2px 0;}
+  .red{color:#d4380d;}
+  .green{color:#0ba95b;}
+  .note{font-size:12px;color:#86909c;margin-top:16px;}
+</style>
+<div style="max-width:1080px;margin:0 auto;">
+
+  <h1>随机地图生成器 · 问题定位与定性</h1>
+  <div class="sub">Unity（团结引擎）· 基于 DungeonGraph / Rasterizer / Painter 源码逐行核对 + 6 组种子（80×80）算法模拟验证 · 2026-09-23</div>
+
+  <h2>一、当前管线：7 步里 4 处错误</h2>
+  <div class="pipeline">
+    <div class="step"><div class="n">① 初始化</div><div class="t">出生点(中心)+出口</div><div class="d">出口随机、离出生 ≥90% 边长</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">② 元胞自动机</div><div class="t">48% 洞 + 演化4次</div><div class="d">洞区收缩至 ~30%，主洞 + 十几碎洞（属参数问题，非主因）</div></div>
+    <div class="arrow">→</div>
+    <div class="step bad"><div class="n">③ 写回 carved</div><div class="t">carved = !map ❌</div><div class="d">CA 语义里 map=true 才是洞，代码取反，把"墙区"当地板</div><div class="tag">问题1 主因</div></div>
+    <div class="arrow">→</div>
+    <div class="step bad"><div class="n">④ 磨平钟乳石</div><div class="t">删墙邻居≤1 的"地板" ❌</div><div class="d">大片地板内部墙邻居=0 → 被整体掏空，只剩 1~4 格碎块</div><div class="tag">问题1/2 主因</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">⑤ 撒障碍</div><div class="t">5% 地板</div><div class="d">逻辑无大问题</div></div>
+    <div class="arrow">→</div>
+    <div class="step bad"><div class="n">⑥ A* 找路</div><div class="t">贪心单步，非 A* ❌</div><div class="d">无 open/closed、无记忆，墙代价10+随机抖动；6/6 种子 2000 步内到不了出口</div><div class="tag">问题3</div></div>
+    <div class="arrow">→</div>
+    <div class="step bad"><div class="n">⑦ 确保出生/出口是地板</div><div class="t">只挖 1 格 ❌</div><div class="d">四周早已被 ④ 掏空/取反成墙 → 出生点成孤岛</div><div class="tag">问题4</div></div>
+  </div>
+
+  <div class="mis">⚠️ 交接报告的关键误诊：报告认为"应在 Painter 的边界掩码处反转"。逐行核对后，<b>CreateBoundaryMask 逻辑自洽（地板→贴、墙邻地板→贴墙、其余不贴），并没有反</b>；真正错误的是 ③ 取反 + ④ SmoothStalactites 掏空地板。若只按报告的思路在 Painter 反掩码，四个问题一个都修不好。</div>
+
+  <h2>二、四个问题定性</h2>
+  <div class="grid">
+    <div class="card"><h3 class="q">问题1 · 拓扑内外反了</h3>
+      <div class="row"><span class="k">现象</span>几百个 1~4 格小方块，每块都贴砖</div>
+      <div class="row"><span class="k">根因</span>③ carved 取反（!map）+ ④ Smooth 掏空大片地板（模拟删除 3400~3800 格，约占 carved 的 60%），块数从 2~6 块碎成 376~460 块、最大块仅 2~4 格</div>
+      <div class="row"><span class="k">证据</span>seed=1：磨平前 4 块/最大4108 → 磨平后 409 块/最大2</div>
+      <div class="fix">修复：carved = map（去取反）；④ 改为"抹墙岛"（保留最大墙连通块，其余墙块变地板）</div>
+    </div>
+    <div class="card"><h3 class="q">问题2 · CA 溶洞碎</h3>
+      <div class="row"><span class="k">现象</span>不是连通大洞</div>
+      <div class="row"><span class="k">根因</span>① CA 本身：48%+4次演化后洞区仅 ~30%、18~30 块（但主洞仍有 569~1315 格，占 9%~20%，不算全碎）；② "碎成上百块"的真正推手是 ④ Smooth 掏空</div>
+      <div class="row"><span class="k">证据</span>正确语义（carved=map）下 ④ 仍删 1641~2051 格，最大块剩 3~4 格——解释了"改取反也没用"</div>
+      <div class="fix">修复：④ 重写后主洞保留（预演最大 639~1358 格）；如需更满可调初始密度/演化次数</div>
+    </div>
+    <div class="card"><h3 class="q">问题3 · A* 没凿路</h3>
+      <div class="row"><span class="k">现象</span>跑了但没凿出新路</div>
+      <div class="row"><span class="k">根因</span>实现是"贪心单步"：每步只看 4 邻居选代价最小，无 closed 集、无全局规划，来回震荡；加上出生/出口都是孤岛，2000 步内到不了出口 → 连通性校验必失败</div>
+      <div class="row"><span class="k">证据</span>6/6 种子 A* 未到达出口；修复预演中"不修 A*"时 spawn→exit 仅 1/6 可达</div>
+      <div class="fix">修复：实现真正的 A*（open/closed 集合、可凿墙），保证 spawn→exit 路径存在；否则地图必然不可达</div>
+    </div>
+    <div class="card"><h3 class="q">问题4 · 玩家卡墙</h3>
+      <div class="row"><span class="k">现象</span>出生点在墙里走不动</div>
+      <div class="row"><span class="k">根因</span>⑦ 只把出生点 1 格强制加进 carved；四周被 ④ 掏空 / ③ 取反成墙</div>
+      <div class="row"><span class="k">证据</span>取反版出生点 8 邻在地板内的只有 0~2/8</div>
+      <div class="fix">修复：出生点/出口挖 3×3（或 5×5）空地——预演后 8/8 邻居为地板</div>
+    </div>
+  </div>
+
+  <h2>三、修复预演数字（同 6 组种子）</h2>
+  <div class="nums">
+    <div class="num">当前代码（取反+Smooth掏空）<div class="big red">2~4 格</div>最大地板块（碎成 376~460 块）</div>
+    <div class="num">修复后（去取反+抹墙岛+挖空地）<div class="big green">639~1358 格</div>最大地板块，出生点 8/8 邻居可走</div>
+    <div class="num">关键提醒<div class="big">1/6</div>仅修地形不修 A*，spawn→exit 可达率 —— 找路环节必须重做</div>
+  </div>
+
+  <div class="note">模拟口径：纯 Python 复刻 DungeonGraph 算法（48% 初始、8 邻墙≥5→墙 / ≤3→洞 / =4 不变、演化 4 次、边缘 2 格强制墙），连通性按 4 邻计算。脚本可复现：simulate_ca.py（现状）、simulate_fix.py（修复预演）。</div>
+</div>
+</html>

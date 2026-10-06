@@ -1,0 +1,34 @@
+% !TeX root = ../main.tex
+% ============================================================
+% Chapter 1: Game Core
+% 说明：本文件由 main.tex 通过 \include{chapters/01_game_core} 合并进主文档。
+%       章节编号由 LaTeX 自动生成，请勿手工编号。
+%       内容忠实来自 策划案.docx 原文（英文），未做改写。
+% ============================================================
+\section{Game Core}
+
+This is a dungeon level-up game. The player collects what they need to clear each level, and the final goal is to defeat the Boss.
+
+\subsection{The Most Significant Design in the Game}
+
+Before reading this chapter, let's think about what makes a game fun and keeps players playing. A fun game comes from these things:
+
+\begin{enumerate}
+  \item The Core: Decision.
+  \item The heartbeat around the core: Uncertainty.
+  \item The decoration of the decision: the density of decisions and their consequences.
+\end{enumerate}
+
+A fun game is packed with interesting decisions. The character, eye-catching visuals, and UI are the decoration around those decisions.
+
+The decisions serve the core loop: beat enemies, feel your growth, and take on challenges that never seem to end.
+
+\subsection{The Core Design Applied in My Game}
+
+The game has several systems: Player, Fog of War, Task, Random Dungeon, Enemy, and more.
+
+First, Decision: the core loop is that the player collects equipment, enters the dungeon, defeats enemies, reaches the exit portal, and chooses to extract or enter the next, harder level. The player's final goal is to defeat the Boss.
+
+Second, Uncertainty: to create uncertainty, I added a Fog of War system and used an algorithm to generate the random dungeon map.
+
+Third, the decoration: to make decisions more interesting, I added the Task System, wrote some story, and designed various weapons, monsters, and chest loot, giving players more choices. I also optimized the dungeon generation algorithm to make maps more balanced and create more decision points in combat.

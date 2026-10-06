@@ -1,0 +1,322 @@
+﻿This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex)
+ restricted \write18 enabled.
+entering extended mode
+(./main.tex
+LaTeX2e <2024-11-01> patch level 2
+L3 programming layer <2025-01-18>
+(d:/texlive/2025/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2024/06/29 v1.4n Standard LaTeX document class
+(d:/texlive/2025/texmf-dist/tex/latex/base/size11.clo))
+(d:/texlive/2025/texmf-dist/tex/latex/geometry/geometry.sty
+(d:/texlive/2025/texmf-dist/tex/latex/graphics/keyval.sty)
+(d:/texlive/2025/texmf-dist/tex/generic/iftex/ifvtex.sty
+(d:/texlive/2025/texmf-dist/tex/generic/iftex/iftex.sty)))
+(d:/texlive/2025/texmf-dist/tex/latex/amsmath/amsmath.sty
+For additional information on amsmath, use the `?' option.
+(d:/texlive/2025/texmf-dist/tex/latex/amsmath/amstext.sty
+(d:/texlive/2025/texmf-dist/tex/latex/amsmath/amsgen.sty))
+(d:/texlive/2025/texmf-dist/tex/latex/amsmath/amsbsy.sty)
+(d:/texlive/2025/texmf-dist/tex/latex/amsmath/amsopn.sty))
+(d:/texlive/2025/texmf-dist/tex/latex/amsfonts/amssymb.sty
+(d:/texlive/2025/texmf-dist/tex/latex/amsfonts/amsfonts.sty))
+(d:/texlive/2025/texmf-dist/tex/latex/graphics/graphicx.sty
+(d:/texlive/2025/texmf-dist/tex/latex/graphics/graphics.sty
+(d:/texlive/2025/texmf-dist/tex/latex/graphics/trig.sty)
+(d:/texlive/2025/texmf-dist/tex/latex/graphics-cfg/graphics.cfg)
+(d:/texlive/2025/texmf-dist/tex/latex/graphics-def/pdftex.def)))
+(d:/texlive/2025/texmf-dist/tex/latex/booktabs/booktabs.sty)
+(d:/texlive/2025/texmf-dist/tex/latex/enumitem/enumitem.sty)
+(d:/texlive/2025/texmf-dist/tex/latex/microtype/microtype.sty
+(d:/texlive/2025/texmf-dist/tex/latex/etoolbox/etoolbox.sty)
+(d:/texlive/2025/texmf-dist/tex/latex/microtype/microtype-pdftex.def)
+(d:/texlive/2025/texmf-dist/tex/latex/microtype/microtype.cfg))
+(d:/texlive/2025/texmf-dist/tex/latex/setspace/setspace.sty)
+(d:/texlive/2025/texmf-dist/tex/latex/newtx/newtxtext.sty
+`newtxtext' v1.744, 2024/04/01 Text macros taking advantage of TeXGyre Termes a
+nd its extensions (msharpe)
+(d:/texlive/2025/texmf-dist/tex/latex/xpatch/xpatch.sty
+(d:/texlive/2025/texmf-dist/tex/latex/l3kernel/expl3.sty
+(d:/texlive/2025/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def))
+(d:/texlive/2025/texmf-dist/tex/latex/l3packages/xparse/xparse.sty))
+(d:/texlive/2025/texmf-dist/tex/latex/xcolor/xcolor.sty
+(d:/texlive/2025/texmf-dist/tex/latex/graphics-cfg/color.cfg)
+(d:/texlive/2025/texmf-dist/tex/latex/graphics/mathcolor.ltx))
+(d:/texlive/2025/texmf-dist/tex/latex/xkeyval/xkeyval.sty
+(d:/texlive/2025/texmf-dist/tex/generic/xkeyval/xkeyval.tex
+(d:/texlive/2025/texmf-dist/tex/generic/xkeyval/xkvutils.tex)))
+(d:/texlive/2025/texmf-dist/tex/latex/base/textcomp.sty)
+(d:/texlive/2025/texmf-dist/tex/generic/xstring/xstring.sty
+(d:/texlive/2025/texmf-dist/tex/generic/xstring/xstring.tex))
+(d:/texlive/2025/texmf-dist/tex/latex/base/ifthen.sty)
+(d:/texlive/2025/texmf-dist/tex/latex/carlisle/scalefnt.sty)
+(d:/texlive/2025/texmf-dist/tex/generic/kastrup/binhex.tex)
+(d:/texlive/2025/texmf-dist/tex/latex/fontaxes/fontaxes.sty))
+(d:/texlive/2025/texmf-dist/tex/latex/newtx/newtxmath.sty
+`newtxmath' v1.754, 2024/09/22 Math macros based originally on txfonts (msharpe
+) (d:/texlive/2025/texmf-dist/tex/latex/oberdiek/centernot.sty)
+(d:/texlive/2025/texmf-dist/tex/generic/kastrup/binhex.tex)
+amsthm NOT loaded
+) (d:/texlive/2025/texmf-dist/tex/latex/hyperref/hyperref.sty
+(d:/texlive/2025/texmf-dist/tex/latex/kvsetkeys/kvsetkeys.sty)
+(d:/texlive/2025/texmf-dist/tex/generic/kvdefinekeys/kvdefinekeys.sty)
+(d:/texlive/2025/texmf-dist/tex/generic/pdfescape/pdfescape.sty
+(d:/texlive/2025/texmf-dist/tex/generic/ltxcmds/ltxcmds.sty)
+(d:/texlive/2025/texmf-dist/tex/generic/pdftexcmds/pdftexcmds.sty
+(d:/texlive/2025/texmf-dist/tex/generic/infwarerr/infwarerr.sty)))
+(d:/texlive/2025/texmf-dist/tex/latex/hycolor/hycolor.sty)
+(d:/texlive/2025/texmf-dist/tex/latex/hyperref/nameref.sty
+(d:/texlive/2025/texmf-dist/tex/latex/refcount/refcount.sty)
+(d:/texlive/2025/texmf-dist/tex/generic/gettitlestring/gettitlestring.sty
+(d:/texlive/2025/texmf-dist/tex/latex/kvoptions/kvoptions.sty)))
+(d:/texlive/2025/texmf-dist/tex/generic/stringenc/stringenc.sty)
+(d:/texlive/2025/texmf-dist/tex/latex/hyperref/pd1enc.def)
+(d:/texlive/2025/texmf-dist/tex/generic/intcalc/intcalc.sty)
+(d:/texlive/2025/texmf-dist/tex/latex/hyperref/puenc.def)
+(d:/texlive/2025/texmf-dist/tex/latex/url/url.sty)
+(d:/texlive/2025/texmf-dist/tex/generic/bitset/bitset.sty
+(d:/texlive/2025/texmf-dist/tex/generic/bigintcalc/bigintcalc.sty))
+(d:/texlive/2025/texmf-dist/tex/latex/base/atbegshi-ltx.sty))
+(d:/texlive/2025/texmf-dist/tex/latex/hyperref/hpdftex.def
+(d:/texlive/2025/texmf-dist/tex/latex/base/atveryend-ltx.sty)
+(d:/texlive/2025/texmf-dist/tex/latex/rerunfilecheck/rerunfilecheck.sty
+(d:/texlive/2025/texmf-dist/tex/generic/uniquecounter/uniquecounter.sty)))
+(d:/texlive/2025/texmf-dist/tex/latex/forest/forest.sty
+(d:/texlive/2025/texmf-dist/tex/latex/pgf/frontendlayer/tikz.sty
+(d:/texlive/2025/texmf-dist/tex/latex/pgf/basiclayer/pgf.sty
+(d:/texlive/2025/texmf-dist/tex/latex/pgf/utilities/pgfrcs.sty
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/utilities/pgfutil-common.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/utilities/pgfutil-latex.def)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/utilities/pgfrcs.code.tex
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/pgf.revision.tex)))
+(d:/texlive/2025/texmf-dist/tex/latex/pgf/basiclayer/pgfcore.sty
+(d:/texlive/2025/texmf-dist/tex/latex/pgf/systemlayer/pgfsys.sty
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/systemlayer/pgfsys.code.tex
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/utilities/pgfkeys.code.tex
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/utilities/pgfkeyslibraryfiltered.co
+de.tex)) (d:/texlive/2025/texmf-dist/tex/generic/pgf/systemlayer/pgf.cfg)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/systemlayer/pgfsys-pdftex.def
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/systemlayer/pgfsys-common-pdf.def))
+)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/systemlayer/pgfsyssoftpath.code.tex
+)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/systemlayer/pgfsysprotocol.code.tex
+)) (d:/texlive/2025/texmf-dist/tex/generic/pgf/basiclayer/pgfcore.code.tex
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/math/pgfmathutil.code.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/math/pgfmathparser.code.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.code.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.basic.code.te
+x)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.trigonometric
+.code.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.random.code.t
+ex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.comparison.co
+de.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.base.code.tex
+)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.round.code.te
+x)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.misc.code.tex
+)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.integerarithm
+etics.code.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/math/pgfmathcalc.code.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/math/pgfmathfloat.code.tex))
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/math/pgfint.code.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepoints.code.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathconstruct.cod
+e.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathusage.code.te
+x)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/basiclayer/pgfcorescopes.code.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/basiclayer/pgfcoregraphicstate.code
+.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretransformations.c
+ode.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/basiclayer/pgfcorequick.code.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreobjects.code.tex)
+
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathprocessing.co
+de.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/basiclayer/pgfcorearrows.code.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreshade.code.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreimage.code.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreexternal.code.tex
+) (d:/texlive/2025/texmf-dist/tex/generic/pgf/basiclayer/pgfcorelayers.code.tex
+)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretransparency.code
+.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepatterns.code.tex
+) (d:/texlive/2025/texmf-dist/tex/generic/pgf/basiclayer/pgfcorerdf.code.tex)))
+ (d:/texlive/2025/texmf-dist/tex/generic/pgf/modules/pgfmoduleshapes.code.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/modules/pgfmoduleplot.code.tex)
+(d:/texlive/2025/texmf-dist/tex/latex/pgf/compatibility/pgfcomp-version-0-65.st
+y)
+(d:/texlive/2025/texmf-dist/tex/latex/pgf/compatibility/pgfcomp-version-1-18.st
+y)) (d:/texlive/2025/texmf-dist/tex/latex/pgf/utilities/pgffor.sty
+(d:/texlive/2025/texmf-dist/tex/latex/pgf/utilities/pgfkeys.sty
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/utilities/pgfkeys.code.tex))
+(d:/texlive/2025/texmf-dist/tex/latex/pgf/math/pgfmath.sty
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex))
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/utilities/pgffor.code.tex))
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/frontendlayer/tikz/tikz.code.tex
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/libraries/pgflibraryplothandlers.co
+de.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/modules/pgfmodulematrix.code.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzli
+brarytopaths.code.tex)))
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzli
+braryshapes.code.tex
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzli
+braryshapes.geometric.code.tex
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/libraries/shapes/pgflibraryshapes.g
+eometric.code.tex))
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzli
+braryshapes.misc.code.tex
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/libraries/shapes/pgflibraryshapes.m
+isc.code.tex))
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzli
+braryshapes.symbols.code.tex
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/libraries/shapes/pgflibraryshapes.s
+ymbols.code.tex))
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzli
+braryshapes.arrows.code.tex
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/libraries/shapes/pgflibraryshapes.a
+rrows.code.tex))
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzli
+braryshapes.callouts.code.tex
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/libraries/shapes/pgflibraryshapes.c
+allouts.code.tex))
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzli
+braryshapes.multipart.code.tex
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/libraries/shapes/pgflibraryshapes.m
+ultipart.code.tex)))
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzli
+braryfit.code.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzli
+brarycalc.code.tex)
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/libraries/pgflibraryintersections.c
+ode.tex
+(d:/texlive/2025/texmf-dist/tex/generic/pgf/libraries/pgflibraryfpu.code.tex))
+(d:/texlive/2025/texmf-dist/tex/latex/pgfopts/pgfopts.sty)
+(d:/texlive/2025/texmf-dist/tex/latex/elocalloc/elocalloc.sty)
+(d:/texlive/2025/texmf-dist/tex/latex/environ/environ.sty
+(d:/texlive/2025/texmf-dist/tex/latex/trimspaces/trimspaces.sty))
+(d:/texlive/2025/texmf-dist/tex/latex/inlinedef/inlinedef.sty))
+(d:/texlive/2025/texmf-dist/tex/latex/forest/forest-lib-edges.sty)
+(d:/texlive/2025/texmf-dist/tex/latex/seqsplit/seqsplit.sty)
+(d:/texlive/2025/texmf-dist/tex/latex/newtx/ot1ntxtlf.fd) (./main.aux
+(./chapters/01_game_core.aux) (./chapters/02_program_structure.aux)
+(./chapters/03_player.aux) (./chapters/04_fog_of_war.aux)
+(./chapters/05_random_dungeon_map.aux) (./chapters/06_enemy.aux)
+(./chapters/07_version.aux) (./chapters/Appendix/A_Hierarchy.aux)
+(./chapters/Appendix/B_Player.aux) (./chapters/Appendix/C_Enemy.aux))
+(d:/texlive/2025/texmf-dist/tex/latex/newtx/omlntxmi.fd)
+(d:/texlive/2025/texmf-dist/tex/latex/newtx/untxexa.fd)
+(d:/texlive/2025/texmf-dist/tex/latex/newtx/lmsntxsy.fd)
+(d:/texlive/2025/texmf-dist/tex/latex/newtx/lmxntxexx.fd)
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+(d:/texlive/2025/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+) (d:/texlive/2025/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
+(d:/texlive/2025/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg))
+(d:/texlive/2025/texmf-dist/tex/latex/microtype/mt-ptm.cfg) (./main.out)
+(./main.out) (d:/texlive/2025/texmf-dist/tex/latex/newtx/ot1minntx.fd)
+(d:/texlive/2025/texmf-dist/tex/latex/amsfonts/umsa.fd)
+(d:/texlive/2025/texmf-dist/tex/latex/microtype/mt-msa.cfg)
+(d:/texlive/2025/texmf-dist/tex/latex/amsfonts/umsb.fd)
+(d:/texlive/2025/texmf-dist/tex/latex/microtype/mt-msb.cfg)
+(d:/texlive/2025/texmf-dist/tex/latex/newtx/untxmia.fd)
+(d:/texlive/2025/texmf-dist/tex/latex/newtx/untxsym.fd)
+(d:/texlive/2025/texmf-dist/tex/latex/newtx/untxsyc.fd)
+[1{d:/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{d:/texlive/202
+5/texmf-dist/fonts/enc/dvips/newtx/ntx-ot1-tlf.enc} <./figures/Chapter00_Cover/
+cover.png>] (./main.toc)
+[2] (./chapters/01_game_core.tex)
+
+pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has 
+been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.70 \include{chapters/01_game_core}
+                                     [1] (./chapters/02_program_structure.tex)
+
+pdfTeX warning (ext4): destination with the same identifier (name{page.2}) has 
+been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.71 \include{chapters/02_program_structure}
+                                             [2] (./chapters/03_player.tex
+(d:/texlive/2025/texmf-dist/tex/latex/newtx/ts1ntxtlf.fd)
+(d:/texlive/2025/texmf-dist/tex/latex/newtx/ot1ntxtt.fd)
+
+LaTeX Font Warning: Font shape `OMS/ntxtt/m/n' undefined
+(Font)              using `OMS/cmsy/m/n' instead
+(Font)              for symbol `textbackslash' on input line 38.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 50--50
+[]\OMS/ntxtt/m/n/10.95 n\OT1/ntxtt/m/n/10.95 Assets\OMS/ntxtt/m/n/10.95 n
+
+Underfull \hbox (badness 10000) in paragraph at lines 50--50
+\OT1/ntxtt/m/n/10.95 PlayerUnit\OMS/ntxtt/m/n/10.95 n
+
+Underfull \hbox (badness 10000) in paragraph at lines 52--52
+[]\OT1/ntxtt/m/n/10.95 ..\OMS/ntxtt/m/n/10.95 n
+
+Underfull \hbox (badness 10000) in paragraph at lines 55--55
+[]\OT1/ntxtlf/m/n/10.95 (+20) Attack, Move-ment,
+
+Overfull \hbox (19.52454pt too wide) in paragraph at lines 46--59
+ [][] 
+
+[3{d:/texlive/2025/texmf-dist/fonts/enc/dvips/tex-gyre/q-ts1.enc}])
+[4] (./chapters/04_fog_of_war.tex
+[5 <./figures/Chapter04_FogOfWar/fog_of_war_effect.png>])
+[6] (./chapters/05_random_dungeon_map.tex
+[7]
+[8 <./figures/Chapter05_RandomDungeonMap/dungeon_new_method.png>])
+[9 <./figures/Chapter05_RandomDungeonMap/dungeon_v1_defects.png>]
+[10] (./chapters/06_enemy.tex
+[11]
+Overfull \hbox (17.6932pt too wide) in paragraph at lines 62--63
+[]\OT1/ntxtlf/m/n/10.95 (-20) ``DamageNumberPrefab'' con-trolled by Dam-age-Pop
+Up plug(\OMS/ntxtt/m/n/10.95 n\OT1/ntxtt/m/n/10.95 ..\OMS/ntxtt/m/n/10.95 n\OT1
+/ntxtt/m/n/10.95 EnemyHealth\OMS/ntxtt/m/n/10.95 n\OT1/ntxtt/m/n/10.95 DamagePo
+pUp\OT1/ntxtlf/m/n/10.95 (-20) )(Prefab
+)
+[12] (./chapters/07_version.tex)
+[13] (./chapters/Appendix/A_Hierarchy.tex
+(d:/texlive/2025/texmf-dist/tex/latex/tex-gyre/ot1qhv.fd))
+[14{d:/texlive/2025/texmf-dist/fonts/enc/dvips/tex-gyre/q-rm.enc}]
+(./chapters/Appendix/B_Player.tex
+
+LaTeX Font Warning: Font shape `OMS/ntxtlf/m/n' undefined
+(Font)              using `OMS/cmsy/m/n' instead
+(Font)              for symbol `textbackslash' on input line 63.
+
+
+[15])
+[16] (./chapters/Appendix/C_Enemy.tex)
+[17] (./main.aux (./chapters/01_game_core.aux)
+(./chapters/02_program_structure.aux) (./chapters/03_player.aux)
+(./chapters/04_fog_of_war.aux) (./chapters/05_random_dungeon_map.aux)
+(./chapters/06_enemy.aux) (./chapters/07_version.aux)
+(./chapters/Appendix/A_Hierarchy.aux) (./chapters/Appendix/B_Player.aux)
+(./chapters/Appendix/C_Enemy.aux))
+
+LaTeX Font Warning: Some font shapes were not available, defaults substituted.
+
+ )
+(see the transcript file for additional information)<d:/texlive/2025/texmf-dist
+/fonts/type1/public/amsfonts/cm/cmsy10.pfb><d:/texlive/2025/texmf-dist/fonts/ty
+pe1/public/tex-gyre/qhvr.pfb><d:/texlive/2025/texmf-dist/fonts/type1/public/tex
+-gyre/qtmr.pfb><d:/texlive/2025/texmf-dist/fonts/type1/public/newtx/txsys.pfb><
+d:/texlive/2025/texmf-dist/fonts/type1/public/txfonts/txtt.pfb><d:/texlive/2025
+/texmf-dist/fonts/type1/public/newtx/ztmb.pfb><d:/texlive/2025/texmf-dist/fonts
+/type1/public/newtx/ztmr.pfb><d:/texlive/2025/texmf-dist/fonts/type1/public/new
+tx/ztmri.pfb>
+Output written on main.pdf (19 pages, 629652 bytes).
+Transcript written on main.log.

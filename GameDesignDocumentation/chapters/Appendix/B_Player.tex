@@ -1,0 +1,78 @@
+% !TeX root = ../../main.tex
+% ============================================================
+% Appendix B: Player（由 08_appendix.tex 拆分而来）
+% 说明：本文件由 main.tex 合并进主文档，且位于 main.tex 的
+%       \appendix 之后，因此 \section 会自动编号为 Appendix B。
+%       内容忠实来自 策划案.docx 原文（英文）。
+%       路径中的反斜杠用 \bs （在 main.tex 中定义为 \textbackslash）。
+% ============================================================
+
+\section{Player}   % 自动显示为 "Appendix B: Player"
+
+\subsection{[1] Player Main Config parameters explaination.}
+
+Path: \texttt{\bs Assets\bs PlayerUnit\bs PlayerConfig\bs PlayerConfig.cs}
+
+SubModule: PlayerHealth
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{Parameters} & \textbf{Function} & \textbf{Data First Read} \\
+\midrule
+MaxHealth & skim & \texttt{PlayerHealth.cs: cs.44} \\
+Defense & skim & \texttt{PlayerHealth.cs: cs.45} \\
+InvincibleDuration & Invincible time & \texttt{PlayerHealth.cs: cs.152} \\
+\bottomrule
+\end{tabular}
+\caption{Player main config parameters}
+\end{table}
+
+\textbf{Plug (PlayerHealth): PlayerHealthBar}
+
+Path: \texttt{\bs Assets\bs PlayerUnit\bs PlayerHealth\bs Plug\_HealthBar}
+
+Files Introduction:
+
+\begin{itemize}
+  \item HealthBarConfig: Control the HealthBar's Animation.
+  \item HealthBarUI.DataTransmittion: Read the data.
+  \item HealthBarUI.Assembly: Set the UI.
+  \item HealthBarUI.Animation: Record the animation types.
+  \item HealthBarUI.Display: Display the HealthBar's Animation.
+\end{itemize}
+
+\subsection{[2] Player Juice parameters explaination (Play Feelings).}
+
+Path: \texttt{\bs Assets\bs PlayerUnit\bs PlayerConfig\bs PlayerConfig.cs}
+
+% TODO: 原文仅有标题与路径，详细参数待补充
+
+\subsection{[3] Player Messages}
+
+Path: \texttt{\bs Assets\bs PlayerUnit\bs PlayerMessageBus}
+
+Messages SubClass:
+
+\begin{enumerate}
+  \item \textbf{PlayerHealth}
+
+  Path: \texttt{\bs Assets\bs PlayerUnit\bs PlayerHealth\bs PlayerHealthMessage.cs}
+
+  Duty: Transmit the CurrentHealth and MaxHealth from PlayHealthCache to Plug\_HealthBar, in order to display the ``CurrentHealth\bs{} MaxHealth'' text.
+
+  Sender: \texttt{\bs Assets\bs PlayerUnit\bs PlayerHealth\bs PlayerHealthCache.cs: cs.53-57.}
+
+  Receiver: \seqsplit{Assets\textbackslash PlayerUnit\textbackslash PlayerHealth\textbackslash Plug\_HealthBar\textbackslash HealthBarUI.DataTransmission: cs.36.}
+
+  \item \textbf{PlayerAttack}
+
+  Path: \texttt{\bs Assets\bs PlayerUnit\bs PlayerAttack\bs PlayerAttackRequestMessage.cs}
+
+  Duty: Transmit three arguments: Direction, PlayerPosition, MousePosition to WeaponSettingsModule.
+
+  Sender: \texttt{\bs Assets\bs PlayerUnit\bs PlayerAttack\bs PlayerAttackAction.cs: cs.65-70.}
+
+  Receiver: \texttt{\bs Assets\bs PlayerUnit\bs PlayerAttack\bs WeaponSettings\bs Iweapon.cs: cs.28.}
+\end{enumerate}

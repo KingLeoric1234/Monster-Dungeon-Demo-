@@ -1,0 +1,54 @@
+% !TeX root = ../main.tex
+% ============================================================
+% Chapter 2: Game Program Structure
+% 说明：本文件由 main.tex 合并进主文档。章节编号 LaTeX 自动生成。
+%       内容忠实来自 策划案.docx 原文（英文）。
+%       % TODO: 标记的小节是原文只有标题、没有内容的部分（待补充索引）。
+% ============================================================
+\section{Game Program Structure}
+
+The game uses a message bus + Game Message to decouple its systems. Each system manages its own scripts. One system handles one object type, and one script handles one function. Different systems connect through the message bus.
+
+Before this structure, I tried a Game Manager / Director pattern to control the whole game system, but it lost the battle: different functions became coupled together. Then I combined the Game Manager with a state machine and a message bus to organize the code. But this defect surfaced as the code grew past about 13k lines. The Game Manager and the state machine could be separated into one independent system that publishes the game state. At September 30, 2026, I completed the new code structure.
+
+\begin{quote}
+\emph{Designer Note:}
+\end{quote}
+
+\subsection{Message Bus + Game Message \& Field Distribution}
+
+The Message Bus + Game Message base class system send messages and completed data for different systems or fields, different fields owns different message bus and The Supreme Message Bus manages messages among different fields.
+
+Distribute functions into these fields: Game State, Player, Enemy, Item, Inventory, World and independent function module names `Execution \& Static Scripts'.
+
+\subsection{Ports}
+
+\begin{enumerate}
+  \item Directly Quote: In modules, deal with massive data with high speed.
+  \item Message Bus: Event Communication that publish significant events.
+  \item Shared Data: modules one another with massive data communications.
+\end{enumerate}
+
+\subsection{Game State}
+
+\begin{enumerate}
+  \item Communication: Only Message Bus.
+  \item Responsibility: Declare the Game State
+  \item State types: Main World, Dungeon + Layer.
+  \item % TODO: 原文第 4 点为空，待补充
+\end{enumerate}
+
+\subsection{Player}
+% TODO: 原文仅有标题，内容待补充
+
+\subsection{Enemy}
+% TODO: 原文仅有标题，内容待补充
+
+\subsection{Item}
+% TODO: 原文仅有标题，内容待补充
+
+\subsection{Inventory}
+% TODO: 原文仅有标题，内容待补充
+
+\subsection{World}
+% TODO: 原文仅有标题，内容待补充

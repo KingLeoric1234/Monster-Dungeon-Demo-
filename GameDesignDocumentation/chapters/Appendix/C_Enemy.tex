@@ -1,0 +1,30 @@
+% !TeX root = ../../main.tex
+% ============================================================
+% Appendix C: Enemy（新建，仿照 A_Hierarchy / B_Player 的结构）
+% 说明：本文件由 main.tex 合并进主文档，且位于 main.tex 的
+%       \appendix 之后，因此 \section 会自动编号为 Appendix C。
+%       内容忠实来自 策划案.docx 原文（英文）。
+%       路径中的反斜杠用 \bs （在 main.tex 中定义为 \textbackslash）。
+% ============================================================
+
+\section{Enemy}   % 自动显示为 "Appendix C: Enemy"
+\subsection{EnemyMovement Direction Submodule}\label{app:c:enemy-movement}
+
+\par \hspace{1.5em} Relative Path: \texttt{\bs Assets\bs EnemyUnit\bs PublicScript\bs EnemyMovement\bs Direction}
+
+\begin{enumerate}
+	\item Direction Data Maintainance: EnemyDirectorCalculator.cs.
+	\item Avoid the obstacle: EnemyAvoidance.cs.
+	\item Seperate the enemies movement(do not let enemies engaged together): EnemySeperation.cs.
+	\item Decide the state whether to ``Patrol'' or ``Chase''.
+	\item Use the BFS algorithm to optimize the chasing algorithm. The algorithm placed in the ``PathFingingAlgorithm'' folder and the algorithm's description placed in \ref{app:c:bfs}.
+\end{enumerate}
+
+\subsection{PathFinding Algorithm}\label{app:c:bfs}
+\par\hspace{1.5em}The BFS(Broad Field Searching) algorithm will increase the enemy chasing logic, preventing enemy chasing like a noob.
+	The BFS algorithm achieved by following steps:
+\begin{enumerate}
+	\item Scan the whole map into states that combined with 'can walk', 'cannot walk'.
+	\item Applied the BFS algorithm into the EnemyMovement's Direction data flow to adjust the moving direction so that enemy will follow the correct path to chase the player.
+	\item\textbf{The BFS algorithm's arguments have written in the BFS\_Arguments.cs.}
+\end{enumerate}

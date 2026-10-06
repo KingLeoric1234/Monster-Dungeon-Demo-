@@ -1,0 +1,95 @@
+% !TeX root = ../main.tex
+% ============================================================
+% Chapter 6: Enemy
+% 说明：本文件由 main.tex 合并进主文档。章节编号 LaTeX 自动生成。
+%       内容忠实来自 策划案.docx 原文（英文）。
+%       路径中的反斜杠用 \bs （在 main.tex 中定义为 \textbackslash）。
+% ============================================================
+\section{Enemy}
+
+\subsection{Module Description}
+
+\par \hspace{1.5em} Divided the system into these modules.
+
+\begin{itemize}
+  \item Spawn Enemy: The only express way to contact the spawn message in the each other modules.
+  \item Public Config: Store the enemy's static template informations.
+  \item Public Script: The module store monster's public behaviour (Core Pipeline).
+  \item Special Enemy AI: The module store Special Enemy AI scripts: These scripts modify the core pipeline to change the behaviours.
+  \item EnemtMessageBus: The private field message bus provide for Enemy field using.
+\end{itemize}
+
+\subsection{System Pipeline}
+
+\begin{enumerate}[label=Step \arabic*:, leftmargin = 5em]
+	\item A module send a message to spawn module for generating monsters. The message contains these arguments: Monster Species, numbers, locations.
+	\item Enemy Spawn Module subscribes the enemy spawn messages, EnemyPipelineController.cs begins to control the pipeline.
+	\item Initialize the correct template data.
+	\item Create a Prefab with correct Unity Components, which contains SpriteRenderer, CircleCollider2D/3D, RigidBody2D/3D.
+	\item Public Scripts work on the Prefab, add scripts to control the monster's behavoiour.(The Core Pipeline, described at \ref{sec:pipeline})
+	\item If the monster carrys special function, then Special Enemy AI's script which correlates to this monster will modify the core pipeline to change properties.
+	\item Add the sprites, animations. Transmit the prefab to Enemy Spawn Module.
+	\item Enemy Spawn Module send the prefab to renderer.
+\end{enumerate}
+
+\subsection{Core Pipeline}\label{sec:pipeline}
+
+\subsubsection{EnemyHealth}
+
+\par \hspace{1.5em} \textbf{Core Data (currentHealth):}
+
+\begin{enumerate}
+	\item \texttt {\bs Assets\bs EnemyUnit\bs PublicScript\bs EnemyInit.cs}: Data Initialization Region. Copy the template's data then transmit into the EnemyHealthData.cs to maintain the argument ``currentHealth''.
+	\item \texttt {\bs Assets\bs EnemyUnit\bs PublicScript\bs EnemyHealthData.cs}: Maintain the ``currentHealth'' data.
+	\item \texttt {\bs Assets\bs EnemyUnit\bs PublicScript\bs Direction.cs}: Recieve and calculate the damage. The only visit tool for ``currentHealth'' in the EnemyHealthData.cs. The submodule's introduction placed in Appendix~\ref{app:c:enemy-movement}.
+	\item \texttt {\bs Assets\bs EnemyUnit\bs PublicScript\bs EnemyDeath}: Destory the EnemyPrefab and play the animation.
+\end{enumerate}
+
+\par\textbf {Plugs (Relative Path):}
+
+\begin{enumerate}
+	\item\texttt {\bs ..\bs Buff\bs EnemyBuffSystem.cs}: The ``DamageBuff'', only control the player providing debuff damage.
+	\item\texttt {\bs ..\bs HealthBar}: The enemy's healthbar controller.
+	\item\texttt {\bs ..\bs Effects}: The tool to control variable effects, such as hit effects, particle effects.
+	\item\texttt {\bs ..\bs Protects}: The tool to protect any kind of inresistible program logic incidents, such as renderer stuck or enemy prefabs stuck into the wall.
+	\item\texttt {\bs ..\bs DamagePopUp}: Damage numbers that enemy pop up when player takes damage to the enemy.
+\end{enumerate}
+
+\par\textbf {Resources:}
+\begin{enumerate}
+	\item ``HitParticlePrefab'' controlled by HitParticle (\texttt{\bs ..\bs EnemyHealth\bs Effects\bs HitParticle}) .
+	\item ``EnemyPrefab'' is located in the \texttt{\bs Assets\bs Resources\bs Enemy\bs EnemyPrefab}.
+	\item ``DamageNumberPrefab'' controlled by DamagePopUp plug(\texttt{\bs ..\bs EnemyHealth\bs DamagePopUp})(Prefab newed by scripts).
+\end{enumerate}
+
+\subsubsection{EnemyAttack}
+
+\hspace{1.5em}\textbf{Only use Collider2D to trigger the attack}. When Enemy's Collider2D triggered player's collider, enemy will send a attack data to player's Module `PlayerHealth'.
+
+
+\subsubsection{EnemyMovement}
+
+\par \hspace{1.5em} Relative Path: \texttt{\bs Assets\bs EnemyUnit\bs PublicScript\bs EnemyMovement}
+
+\par \textbf{Core Data:}
+
+\begin{enumerate}
+	\item\texttt{\bs ..\bs EnemyMovementInit.cs}: Initialize the movement data into the EnemyMovementData.cs.
+	\item\texttt{\bs ..\bs EnemyMovementData.cs}: Maintainance the movement data which engaged with  'current direction' and 'current speed'.
+	\item\texttt{\bs ..\bs EnemySpeedCalculator.cs}: The only port to control the current speed module. The module calculate the final speed and transmit the CurrentSpeed data into EnemyMovementData.cs.
+	
+	\item\texttt{\bs ..\bs Direction}: The only port to control the current direction module. The module calculate the final direction and transmit the CurrentDirection data into the EnemyMovementData.cs
+\end{enumerate}
+
+\par \textbf{Plugs:}
+\begin{enumerate}
+	\item\texttt{\bs ..\bs EnemyKnockBackApplier}: The plug to control the enemy's knockback.
+	\item\texttt{\bs ..\bs PathFindingAlgorithm}: The plug to control the enemy's direction that let enemies along the correct way to catch the player.
+\end{enumerate}
+
+
+
+
+
+
+

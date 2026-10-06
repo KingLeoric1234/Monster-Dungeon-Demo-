@@ -1,0 +1,31 @@
+{
+  "schema_version": "1",
+  "source_path": "D:\\GameJam\\New Tuanjie Project\\GameDesignDocumentation\\main.pdf",
+  "source_filename": "main.pdf",
+  "source_hash": "7f7ab5ef9cec",
+  "source_size_bytes": 609035,
+  "kind": "pdf",
+  "rendered_at_utc": "2026-10-03T09:00:29+00:00",
+  "output_dir": "D:\\GameJam\\New Tuanjie Project\\.preview\\7f7ab5ef9cec",
+  "page_count": 0,
+  "rendered_page_count": 0,
+  "collage_count": 0,
+  "extracted_text_chars": 0,
+  "text_relpath": null,
+  "thumbnail_relpath": null,
+  "pages": [],
+  "collages": [],
+  "warnings": [
+    "pdf parse produced no pages or text"
+  ],
+  "options": {
+    "max_pages": 12,
+    "collage": true,
+    "page_range": null,
+    "thumbnail": true,
+    "text_only": false,
+    "jpeg_quality": 85,
+    "out_max_dim": 2048
+  },
+  "summary": {}
+}
