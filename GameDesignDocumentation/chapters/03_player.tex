@@ -8,98 +8,42 @@
 % ============================================================
 \section{Player}
 
-Player is the main character through the whole game.
-
-\subsection{What Can the Player Do?}
-
-Principle: the controls are simple enough for players to get immersed easily.
-
-\begin{itemize}
-  \item Move: WASD to move; Shift + direction keys to sprint.
-  \item Check details: Q opens a simple stats panel showing ATK (Attack), DEF (Defense), CRT (Critical Chance), SPD (Speed).
-  \item ESC opens the Status Panel, where players check their inventory and armor. This panel lets players manage their gear.
-  \item T opens the Task Panel, showing the player's unfinished tasks.
-  \item Left mouse is the interaction key: attack enemies, open chests, pick up items, and talk to NPCs.
-  \item Right mouse cancels an action, or aims the weapon.
-  \item E shows the attack range of the weapon you are holding.
-  \item P pauses the game.
-\end{itemize}
-
-\subsection{Structure}
-
-Player module is the biggest module in the project
-
-% TODO: 原文仅此一句，结构图/详细说明待补充
-
-\subsection{Data Flow}
-
-Data Origin:
-
-\texttt{Player Config (\bs Assets\bs PlayerUnit\bs PlayerConfig)}: The player unit data.
-
-Player Properties:
-
-Description of the index: Properties(Player Properties), Module Path(The File Path), PlayerConfig(The data extract from the PlayerConfig), Function(The Properties' function).
-
-\begin{table}[htbp]
-\centering
-\begin{tabular}{lp{0.22\textwidth}p{0.28\textwidth}l}
-\toprule
-\textbf{Properties} & \textbf{Module Path} & \textbf{PlayerConfig} & \textbf{Function} \\
-\midrule
-Health & \texttt{\bs Assets\bs PlayerUnit\bs PlayerHealth} & MaxHealth, Defense, InvincibleDuration & Register the player health \\
-Attack & \texttt{..\bs PlayerAttack} & Lots[1] & Register the Player Attack \\
-Movement & \texttt{..\bs PlayerMoveLogic} & Lots[2] & Administer the players movement \\
-Stamina & \texttt{..\bs PlayerStamina} & Lots[3] & Player sprint stamina \\
-KnockBack & Movement & KnckbackResistance & Apply Knock-back on Monsters \\
-Hand Feels & Attack, Movement, Stamina & Lots[4] & Upgrade the Game Feelings \\
-Camera & None & Lots[5] & Control the camera moving \\
-\bottomrule
-\end{tabular}
-\caption{Player properties and their data sources}
-\end{table}
+\subsection{Module Description}
 
 \begin{enumerate}
-  \item[\textnormal{[1]}] AttackCoolDown, AttackRange, KnockDownForce, Attack, AttackAngle, DamageMaxMultiplier, DamageMinMultiplier.
-  \item[\textnormal{[2]}] MoveSpeed, RunSpeed.
-  \item[\textnormal{[3]}] MaxStamina, StaminaDrainRate, StaminaRegenRate, StaminaRegenDelay, StaminaMinThreshold, StaminaLowThreshold, StaminaRecoverThreshold, Stamina-LowThreshold, StaminaHideDelay.
-  \item[\textnormal{[4]}] MoveAccelK, MoveDecelK, MoveStopThreshold, BrakeDuration, Blink-Interval, AttackSlowSpeed, AttackSlowLerp, AttackSlowThreshold.
-  \item[\textnormal{[5]}] CameraSmoothSpeed, CameraInutSmooth, CameraTrunDelay, CameraDeadzoneX, CameraDeadzoneY, CameraFreeRadius.
+	\item Player Config: Store the player's initialization config file.
+	\item Player Attack: Properties: Control the player attack mode. Describe at \ref{PlayerAttack}.
+	\item Player Health: Properties: Control the player health. Descibe at \ref{PlayerHealth}.
+	\item Player Movement: Properties: Control the player movement. Describe at \ref{PlayerMovement}.
+	\item Player Stamina: Properties: Control the player stamina. Describe at \ref{PlayerStamina}.
 \end{enumerate}
 
-The introduction of the parameters explaination is in the Appendix [1].
-
-\subsection{Function: Camera}
-% TODO: 原文仅有标题，内容待补充
-
-\subsection{Function: Status Panel}
+\subsection{System Pipeline}
 
 \begin{enumerate}
-  \item Animation: panels open and close with sliding animations for a smoother feel.
-  \item Description 1: Health Bar --- shows the player's current health.
-  \item Description 2: PP Bar --- shows whether the player can hold Shift to sprint.
-  \item Description 3: Gold --- spend it on various equipment or other useful items.
-  \item Description 4: Armor Column --- where the player equips and manages their gear.
-  \item Description 5: Equipment Detail Slots --- players manage these slots to equip or drop their gear.
-  \item Description 6: Storage Slots --- players use or clear these slots.
-  \item Description 7: Storage Column --- the right panel of the Status Panel, where players manage their gadgets.
-  \item Description 8: Empty Hint --- shows ``Empty'' when no item is equipped in a slot.
-  \item Description 9: Safe Column --- stores and protects the player's gadgets if the player dies in the dungeon.
+	\item Keyboard input detection: Control the player's movement and summon the functions.
+	\item Properties: Player Renderer, Player Attack, Player Movement, Player Stamina.
 \end{enumerate}
 
-\subsection{Function: Task Panel}
-% TODO: 原文仅有标题，内容待补充
+\subsection{SubModule Pipeline}
 
-\subsection{Function: Inventory}
+\subsubsection{Player Attack}\label{PlayerAttack}
 
-Here shows the code structure that convenient to reconstruct.
+	\hspace{1.5em}
 
+\subsubsection{Player Health}\label{PlayerHealth}
+
+	\par\hspace{1.5em} \textbf{Core Data:} currentHealth.
 \begin{enumerate}
-  \item InventoryDirector
+	\item PlayerHealthInit.cs: Initial the player health and transmit the player health into the PlayerHealthCache.cs.
+	\item PlayerHealthCache.cs: Maintain the \textbf{currentHealth} argument.
+	\item PlayerHealthCalculator: Control the currentHealth changing port.
+	\item MaxHealthManager.cs: manages the maximum/minimum health port.
+	\item Invincibility: When invincibility, player will not take damages from anywhere.
+	\item HitReactions: Control the effects.
+	\item PlayerHealthMessage: Send messages to Plug HealthBar folder to control the currentHealth display.
 \end{enumerate}
 
-\subsection{Function: Statistic Panel}
-% TODO: 原文仅有标题，内容待补充
+\subsubsection{Player Movement}\label{PlayerMovement}
 
-\subsection{Function: ItemPickingUp}
-% TODO: 原文仅有标题，内容待补充
+\subsubsection{Player Stamina}\label{PlayerStamina}

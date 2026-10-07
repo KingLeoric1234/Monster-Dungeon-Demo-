@@ -5,6 +5,7 @@ using System.Collections;
 using Game.Core;
 using Game.Player;
 using Game.Items;
+using Player; // PlayerMessageBus: stamina PP message now travels on the Player domain bus
 
 namespace Game.UI
 {
@@ -65,13 +66,13 @@ namespace Game.UI
 
         private void OnEnable()
         {
-            MessageBus.Subscribe<PlayerStaminaChangedMessage>(OnStaminaChanged);
+            PlayerMessageBus.Subscribe<PlayerStaminaChangedMessage>(OnStaminaChanged);
             MessageBus.Subscribe<GoldChangedMessage>(OnGoldChanged);
         }
 
         private void OnDisable()
         {
-            MessageBus.Unsubscribe<PlayerStaminaChangedMessage>(OnStaminaChanged);
+            PlayerMessageBus.Unsubscribe<PlayerStaminaChangedMessage>(OnStaminaChanged);
             MessageBus.Unsubscribe<GoldChangedMessage>(OnGoldChanged);
         }
 

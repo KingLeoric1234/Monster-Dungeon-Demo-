@@ -10,7 +10,7 @@ namespace Game.Player
     /// 无敌帧/粒子/死亡侦测是受击流程的收尾，单向调用 Invincibility / HitReaction。
     /// 挂载 Player 物体上。
     /// </summary>
-    public class PlayerHealthAction : MonoBehaviour
+    public class PlayerHealthCalculator : MonoBehaviour
     {
         // 引用（自动获取，不依赖手动拖拽）
         private PlayerHealthCache cache;

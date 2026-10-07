@@ -32,14 +32,14 @@
 	\item The Enemy Spawn Module sends the Prefab to the renderer.
 \end{enumerate}
 
-\subsection{Core Pipeline}\label{sec:pipeline}
+\subsection{SubModule Pipeline}\label{sec:pipeline}
 
-\subsubsection{EnemyHealth}
+\subsubsection{Enemy Health}
 
 \par \hspace{1.5em} \textbf{Core Data (currentHealth):}
 
 \begin{enumerate}
-	\item \texttt{\bs Assets\bs EnemyUnit\bs PublicScript\bs EnemyInit.cs}: Data Initialization Region. Copies the template data into EnemyHealthData.cs, which maintains the ``currentHealth'' field.
+	\item \texttt{\bs Assets\bs EnemyUnit\bs PublicScript\bs EnemyInit.cs}: Data Initialization Region. Copies the template data into EnemyHealthData.cs, which maintains the ``currentHealth'' argument.
 	\item \texttt{\bs Assets\bs EnemyUnit\bs PublicScript\bs EnemyHealthData.cs}: Maintains the ``currentHealth'' data.
 	\item \texttt{\bs Assets\bs EnemyUnit\bs PublicScript\bs Direction.cs}: Receives and calculates damage. The only entry point that accesses ``currentHealth'' in EnemyHealthData.cs. The submodule's introduction is placed in Appendix~\ref{app:c:enemy-movement}.
 	\item \texttt{\bs Assets\bs EnemyUnit\bs PublicScript\bs EnemyDeath}: Destroys the EnemyPrefab and plays the death animation.
@@ -62,11 +62,11 @@
 	\item ``DamageNumberPrefab'', controlled by the DamagePopUp plug (\texttt{\bs ..\bs EnemyHealth\bs DamagePopUp}) (instantiated by scripts).
 \end{enumerate}
 
-\subsubsection{EnemyAttack}
+\subsubsection{Enemy Attack}
 
 \par \hspace{1.5em}\textbf{Attacks are triggered only by Collider2D}. When the enemy's Collider2D touches the player's collider, the enemy sends attack data to the player's ``PlayerHealth'' module.
 
-\subsubsection{EnemyMovement}
+\subsubsection{Enemy Movement}
 
 \par \hspace{1.5em} Relative Path: \texttt{\bs Assets\bs EnemyUnit\bs PublicScript\bs EnemyMovement}
 

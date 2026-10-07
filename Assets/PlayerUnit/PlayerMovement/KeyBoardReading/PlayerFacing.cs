@@ -4,39 +4,29 @@ using Game.Player;
 namespace Game.Player
 {
     /// <summary>
-    /// 玩家朝向（四方向）
+    /// 玩家朝向（左右）
     /// </summary>
     public enum PlayerFacingDirection
     {
-        Up,     // 上（背对玩家）
-        Down,   // 下（面对玩家）
         Left,   // 左（朝右贴图的镜像）
         Right   // 右（默认朝向）
     }
 
     /// <summary>
-    /// 玩家四方向动画控制器。
-    /// 根据移动方向和状态（走路/奔跑/急刹），播放对应的帧动画。
-    /// - W（上）：背对玩家的贴图
-    /// - S（下）：面对玩家的贴图
-    /// - A/D（左右）：朝右贴图，A时flipX镜像
+    /// 玩家左右朝向动画控制器。
+    /// 只负责左/右方向的帧动画：朝右用原贴图，朝左用 flipX 镜像。
+    /// - A（左）：flipX 镜像
+    /// - D（右）：默认朝向
     /// - 急刹：播放专门的急刹帧
     ///
     /// 挂在玩家物体上，与 PlayerMovement 配合使用。
+    /// 垂直输入不影响朝向（只保留左右动画）。
     /// </summary>
     public class PlayerFacing : MonoBehaviour
     {
-        [Header("上方向（W，背对玩家）")]
-        [SerializeField] private Sprite[] upWalkFrames;     // 上方向走路帧
-        [SerializeField] private Sprite[] upRunFrames;      // 上方向奔跑帧
-
-        [Header("下方向（S，面对玩家）")]
-        [SerializeField] private Sprite[] downWalkFrames;   // 下方向走路帧
-        [SerializeField] private Sprite[] downRunFrames;    // 下方向奔跑帧
-
-        [Header("右方向（D，默认朝向；A时用flipX镜像）")]
-        [SerializeField] private Sprite[] rightWalkFrames;  // 右方向走路帧
-        [SerializeField] private Sprite[] rightRunFrames;   // 右方向奔跑帧
+        [Header("左右方向（D为默认朝向；A时用flipX镜像）")]
+        [SerializeField] private Sprite[] rightWalkFrames;  // 走路帧
+        [SerializeField] private Sprite[] rightRunFrames;   // 奔跑帧
 
         [Header("急刹动画")]
         [SerializeField] private Sprite brakeFrame;          // 急刹帧（冲刺结束时播放）
@@ -49,7 +39,7 @@ namespace Game.Player
         [SerializeField] private SpriteRenderer spriteRenderer;
         [SerializeField] private PlayerMovement movement;
 
-        private PlayerFacingDirection currentDirection = PlayerFacingDirection.Down;
+        private PlayerFacingDirection currentDirection = PlayerFacingDirection.Right;
         private float animTimer;
         private int currentAnimFrame;
 
@@ -67,26 +57,12 @@ namespace Game.Player
             PlayAnimationByState();
         }
 
-        /// <summary>根据键盘输入更新朝向（优先垂直方向，其次水平方向）</summary>
+        /// <summary>根据水平输入更新朝向（只有左/右；无输入保持当前朝向）</summary>
         private void UpdateDirectionByInput()
         {
             float horizontal = Input.GetAxisRaw("Horizontal");
-            float vertical = Input.GetAxisRaw("Vertical");
 
-            // 没有输入就保持当前朝向
-            if (horizontal == 0 && vertical == 0) return;
-
-            // 优先判断垂直方向（W=上，S=下）
-            if (vertical > 0)
-            {
-                currentDirection = PlayerFacingDirection.Up;
-            }
-            else if (vertical < 0)
-            {
-                currentDirection = PlayerFacingDirection.Down;
-            }
-            // 没有垂直输入时判断水平方向
-            else if (horizontal > 0)
+            if (horizontal > 0)
             {
                 currentDirection = PlayerFacingDirection.Right;
             }
@@ -101,12 +77,10 @@ namespace Game.Player
         {
             if (spriteRenderer == null)
             {
-                // Debug.LogWarning("[PlayerFacing] spriteRenderer 为 null！");
                 return;
             }
             if (movement == null)
             {
-                // Debug.LogWarning("[PlayerFacing] movement 为 null！");
                 return;
             }
 
@@ -123,13 +97,12 @@ namespace Game.Player
                 return;
             }
 
-            // 获取当前方向对应的帧数组
+            // 左右共用同一套贴图，靠 flipX 镜像区分
             Sprite[] currentFrames = GetFramesByDirectionAndState();
             float frameInterval = movement.IsRunning() ? runFrameInterval : walkFrameInterval;
 
             if (currentFrames == null || currentFrames.Length == 0)
             {
-                // Debug.LogWarning($"[PlayerFacing] 当前方向={currentDirection}, 奔跑={movement.IsRunning()}, 帧数组为空！请拖入对应贴图");
                 return;
             }
 
@@ -162,23 +135,10 @@ namespace Game.Player
             spriteRenderer.sprite = currentFrames[currentAnimFrame];
         }
 
-        /// <summary>根据当前方向和状态获取对应的帧数组</summary>
+        /// <summary>获取当前帧数组（左右共用：走路/奔跑）</summary>
         private Sprite[] GetFramesByDirectionAndState()
         {
-            bool isRunning = movement.IsRunning();
-
-            switch (currentDirection)
-            {
-                case PlayerFacingDirection.Up:
-                    return isRunning ? upRunFrames : upWalkFrames;
-                case PlayerFacingDirection.Down:
-                    return isRunning ? downRunFrames : downWalkFrames;
-                case PlayerFacingDirection.Left:
-                case PlayerFacingDirection.Right:
-                    return isRunning ? rightRunFrames : rightWalkFrames;
-                default:
-                    return downWalkFrames;
-            }
+            return movement.IsRunning() ? rightRunFrames : rightWalkFrames;
         }
 
         /// <summary>获取当前朝向（供其他脚本读取）</summary>
@@ -187,19 +147,7 @@ namespace Game.Player
         /// <summary>获取当前朝向的单位向量（供射击角度限制用）</summary>
         public Vector2 GetFacingVector()
         {
-            switch (currentDirection)
-            {
-                case PlayerFacingDirection.Up:
-                    return Vector2.up;
-                case PlayerFacingDirection.Down:
-                    return Vector2.down;
-                case PlayerFacingDirection.Left:
-                    return Vector2.left;
-                case PlayerFacingDirection.Right:
-                    return Vector2.right;
-                default:
-                    return Vector2.down;
-            }
+            return currentDirection == PlayerFacingDirection.Left ? Vector2.left : Vector2.right;
         }
     }
 }
